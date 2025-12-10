@@ -7,13 +7,19 @@ import { initDatabase, getUser } from '../services/db';
 // Screens
 import RegistrationScreen from '../screens/RegistrationScreen';
 import AboutScreen from '../screens/AboutScreen';
-import TabNavigator from './TabNavigator'; // Import the new Tab Navigator
+import TabNavigator from './TabNavigator';
+import ChapterDetailScreen from '../screens/ChapterDetailScreen'; // 1. IMPORT THIS
 
-// Update types
 export type RootStackParamList = {
     Registration: undefined;
     About: undefined;
-    MainTabs: undefined; // Replaces 'Home'
+    MainTabs: undefined;
+    ChapterDetail: {
+        id: number;
+        title: string;
+        tag: string;
+        image: any;
+    };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -28,10 +34,8 @@ export default function AppNavigator() {
                 const user = await getUser();
 
                 if (user) {
-                    // User exists -> Go to About (Intro) first
                     setInitialRoute('About');
                 } else {
-                    // No user -> Go to Registration
                     setInitialRoute('Registration');
                 }
             } catch (e) {
@@ -62,8 +66,14 @@ export default function AppNavigator() {
             >
                 <Stack.Screen name="Registration" component={RegistrationScreen} />
                 <Stack.Screen name="About" component={AboutScreen} />
-                {/* MainTabs now holds the bottom bar, including HomeScreen */}
                 <Stack.Screen name="MainTabs" component={TabNavigator} />
+
+                {/* 2. REGISTER THE SCREEN HERE */}
+                <Stack.Screen
+                    name="ChapterDetail"
+                    component={ChapterDetailScreen}
+                    options={{ animation: 'slide_from_right' }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );

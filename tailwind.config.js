@@ -8,6 +8,7 @@ module.exports = {
       fontFamily: {
         poppins: ["Poppins_400Regular"],
         "poppins-bold": ["Poppins_700Bold"],
+        "poppins-semibold": ["Poppins_600SemiBold"],
         serif: ["Poppins_700SemiBold"],
       },
       colors: {

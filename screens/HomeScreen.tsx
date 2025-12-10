@@ -2,11 +2,10 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
-// import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// import { RootStackParamList } from '../navigation/AppNavigator';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import {Ionicons} from "@expo/vector-icons";
 
-// Mock Data for Chapters
-// TODO: Replace 'require' paths with your actual chapter images
 const chapters = [
     {
         id: 1,
@@ -47,11 +46,16 @@ const chapters = [
 ];
 
 export default function HomeScreen() {
-    // const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-    const handleRead = (chapterId: number) => {
-        console.log(`Open Chapter ${chapterId}`);
-        // Add navigation to chapter details here
+    const handleRead = (chapter: typeof chapters[0]) => {
+        // 2. Navigate to ChapterDetail with params
+        navigation.navigate('ChapterDetail', {
+            id: chapter.id,
+            title: chapter.title,
+            tag: chapter.tag,
+            image: chapter.image,
+        });
     };
 
     return (
@@ -102,11 +106,10 @@ export default function HomeScreen() {
                             {/* Action Button */}
                             <TouchableOpacity
                                 activeOpacity={0.8}
-                                onPress={() => handleRead(chapter.id)}
+                                onPress={() => handleRead(chapter)}
                                 className="bg-[#4e342e] py-3 rounded-full flex-row justify-center items-center shadow-md active:opacity-90"
                             >
-                                {/* Book Icon (Simple text representation or use an icon library) */}
-                                <Text className="text-white mr-2">📖</Text>
+                                <Ionicons name='book-outline' size={18} color='#FFFFFF' className='px-2'/>
                                 <Text className="text-white font-poppins-bold text-sm tracking-wide">
                                     Basahin at Sagutin ang Nobela
                                 </Text>
