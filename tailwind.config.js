@@ -6,15 +6,16 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ["Poppins_400Regular"],
-        "poppins-bold": ["Poppins_700Bold"],
-        "poppins-semibold": ["Poppins_600SemiBold"],
-        serif: ["Poppins_700SemiBold"],
+        poppins: ['Poppins_400Regular'],
+        'poppins-bold': ['Poppins_700Bold'],
+        'poppins-semibold': ['Poppins_600SemiBold'],
+        serif: ['Poppins_700SemiBold'],
+        script: ['GreatVibes'],
       },
       colors: {
-        parchment: "#E8D4B0",
-        ink: "#1a0f0f",
-      }
+        parchment: '#E8D4B0',
+        ink: '#1a0f0f',
+      },
     },
   },
   plugins: [],

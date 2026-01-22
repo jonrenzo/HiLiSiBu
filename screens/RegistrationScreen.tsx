@@ -79,167 +79,193 @@ export default function RegistrationScreen() {
     );
 
     return (
-        <ImageBackground
-            source={require('../assets/images/noli_bg.png')}
-            className="flex-1 justify-center"
-            resizeMode="cover"
-        >
-            <View className="flex-1 bg-black/30 px-8 pt-20 pb-10 justify-between">
-
-                {/* Header */}
-                <View className="items-center mt-56">
-                    <Text className="text-white text-6xl font-poppins-bold shadow-lg py-2">
-                        HiLiSiBu
-                    </Text>
-                    <View className="mt-4">
-                        <Text className="text-white text-center font-poppins-bold text-lg">
-                            Simulan Natin!
-                        </Text>
-                        <Text className="text-white text-center text-sm opacity-80 px-4 font-poppins">
-                            Ilagay ang inyong mga impormasyon upang makapagsimula
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Form */}
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    className="w-full space-y-4"
-                >
-                    <TextInput
-                        placeholder="Pangalan"
-                        placeholderTextColor="#3e2c2c"
-                        className="w-full bg-parchment border-2 border-ink rounded-full py-4 px-6 text-center font-poppins-bold text-ink text-lg mb-4 shadow-sm"
-                        value={formData.name}
-                        onChangeText={(text) => setFormData({ ...formData, name: text })}
-                    />
-
-                    <TextInput
-                        placeholder="Baitang"
-                        placeholderTextColor="#3e2c2c"
-                        className="w-full bg-parchment border-2 border-ink rounded-full py-4 px-6 text-center font-poppins-bold text-ink text-lg mb-4 shadow-sm"
-                        value={formData.grade}
-                        onChangeText={(text) => setFormData({ ...formData, grade: text })}
-                    />
-
-                    <TextInput
-                        placeholder="Seksyon"
-                        placeholderTextColor="#3e2c2c"
-                        className="w-full bg-parchment border-2 border-ink rounded-full py-4 px-6 text-center font-poppins-bold text-ink text-lg mb-8 shadow-sm"
-                        value={formData.section}
-                        onChangeText={(text) => setFormData({ ...formData, section: text })}
-                    />
-
-                    <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={handleStart}
-                        className="w-full bg-[#f5c170] border-2 border-ink rounded-full py-4 items-center shadow-lg transform active:scale-95 transition-transform"
-                    >
-                        <Text className="text-ink font-poppins-bold text-xl tracking-widest uppercase">
-                            SIMULAN
-                        </Text>
-                    </TouchableOpacity>
-                </KeyboardAvoidingView>
-
-                {/* Footer Link to Modal */}
-                <View className="items-center mb-4">
-                    <TouchableOpacity onPress={() => setModalVisible(true)}>
-                        <Text className="text-white text-sm underline opacity-80 font-poppins-bold">
-                            Mga Tuntunin at Kondisyon
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
+      <ImageBackground
+        source={require('../assets/images/bg_login.png')}
+        className="flex-1 justify-center"
+        resizeMode="cover">
+        <View className="absolute inset-0 bg-yellow-900/50" />
+        <View className="flex-1 justify-between bg-black/30 px-8 pb-10 pt-20">
+          {/* Header */}
+          <View className="mt-56 items-center">
+            <Text
+              className="font-script text-white drop-shadow-lg"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={{
+                fontSize: 64, // bigger than 5xl
+                lineHeight: 70,
+                textAlign: 'center',
+              }}>
+              Noli Me Tangere
+            </Text>
+            <Text className="py-2 text-center font-poppins-bold text-lg text-white shadow-lg">
+              Paghihinuha, Paglilinaw, Pagsisiyasat, at Pagbubuod
+            </Text>
+            <View className="mt-4">
+              <Text className="text-center font-poppins-bold text-lg text-white">
+                Simulan Natin!
+              </Text>
+              <Text className="px-4 text-center font-poppins text-sm text-white opacity-80">
+                Ilagay ang inyong mga impormasyon upang makapagsimula
+              </Text>
             </View>
+          </View>
 
-            {/* Terms and Conditions Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View className="flex-1 justify-center items-center bg-black/60 p-6">
-                    <View className="bg-parchment w-full h-[85%] rounded-3xl border-4 border-[#8B4513] overflow-hidden">
+          {/* Form */}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            className="w-full space-y-4">
+            <TextInput
+              placeholder="Pangalan"
+              placeholderTextColor="#3e2c2c"
+              className="mb-4 w-full rounded-full border-2 border-ink bg-parchment px-6 py-4 text-center font-poppins-bold text-lg text-ink shadow-sm"
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
+            />
 
-                        {/* Modal Header */}
-                        <View className="bg-[#8B4513] p-4 items-center">
-                            <Text className="text-[#E8D4B0] font-poppins-bold text-lg text-center">
-                                Mga Tuntunin at Kondisyon
-                            </Text>
-                        </View>
+            <TextInput
+              placeholder="Baitang"
+              placeholderTextColor="#3e2c2c"
+              className="mb-4 w-full rounded-full border-2 border-ink bg-parchment px-6 py-4 text-center font-poppins-bold text-lg text-ink shadow-sm"
+              value={formData.grade}
+              onChangeText={(text) => setFormData({ ...formData, grade: text })}
+            />
 
-                        {/* Modal Content Scroll */}
-                        <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={true}>
-                            <Text className="font-poppins-bold text-ink text-sm mb-1">I. Layunin</Text>
-                            <Text className="font-poppins text-ink text-xs mb-3 text-justify">
-                                Ang aplikasyon ay isinagawa upang tulungan ang mga mag-aaral sa kanilang pagbabasa na may pang-unawa. Ito ay nakatuon sa mga kasanayang paghinuha, paglilinaw, pagsisiyasat, at pagbubuod upang mapaunlad ang kanilang pang-unawa at kritikal na pag-iisip.
-                            </Text>
+            <TextInput
+              placeholder="Seksyon"
+              placeholderTextColor="#3e2c2c"
+              className="mb-8 w-full rounded-full border-2 border-ink bg-parchment px-6 py-4 text-center font-poppins-bold text-lg text-ink shadow-sm"
+              value={formData.section}
+              onChangeText={(text) => setFormData({ ...formData, section: text })}
+            />
 
-                            <Text className="font-poppins-bold text-ink text-sm mb-1">II. Saklaw ng Paggamit</Text>
-                            <Text className="font-poppins text-ink text-xs mb-3 text-justify">
-                                • Ang aplikasyon ay gagamitin lamang para sa mga gawaing pang-akademiko at hindi para sa personal, komersyal, o libangan.{'\n'}
-                                • Ang mga mag-aaral ay inaasahang gagamit ng aplikasyon sa tamang paraan at ayon sa itinakdang layunin ng pananaliksik.
-                            </Text>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleStart}
+              className="w-full transform items-center rounded-full border-2 border-ink bg-[#f5c170] py-4 shadow-lg transition-transform active:scale-95">
+              <Text className="font-poppins-bold text-xl uppercase tracking-widest text-ink">
+                SIMULAN
+              </Text>
+            </TouchableOpacity>
+          </KeyboardAvoidingView>
 
-                            <Text className="font-poppins-bold text-ink text-sm mb-1">III. Pagkapribado at Kumpidensyalidad</Text>
-                            <Text className="font-poppins text-ink text-xs mb-3 text-justify">
-                                • Ang lahat ng datos na ilalagay ng mag-aaral sa aplikasyon ay mananatiling pribado at kumpidensyal.{'\n'}
-                                • Hindi isasapubliko ang mga sagot o impormasyon maliban kung bahagi ng pagsusuri sa pananaliksik.{'\n'}
-                                • Walang personal na pagkakakilanlan ang ilalantad sa anumang ulat o presentasyon.{'\n'}
-                                • Sa paggamit ng aplikasyon, ang mag-aaral ay nagbibigay ng pahintulot na gamitin ang kanyang mga sagot para sa layunin ng pananaliksik.
-                            </Text>
+          {/* Footer Link to Modal */}
+          <View className="mb-4 items-center">
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Text className="font-poppins-bold text-sm text-white underline opacity-80">
+                Mga Tuntunin at Kondisyon
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-                            <Text className="font-poppins-bold text-ink text-sm mb-1">IV. Pananagutan ng Gumagamit</Text>
-                            <Text className="font-poppins text-ink text-xs mb-3 text-justify">
-                                • Ang mag-aaral ay inaasahang magbibigay ng tapat, malinaw, at makabuluhang sagot.{'\n'}
-                                • Ang mag-aaral ay may pananagutan na huwag maglagay ng maling impormasyon o anumang hindi angkop na sagot.
-                            </Text>
+        {/* Terms and Conditions Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}>
+          <View className="flex-1 items-center justify-center bg-black/60 p-6">
+            <View className="h-[85%] w-full overflow-hidden rounded-3xl border-4 border-[#8B4513] bg-parchment">
+              {/* Modal Header */}
+              <View className="items-center bg-[#8B4513] p-4">
+                <Text className="text-center font-poppins-bold text-lg text-[#E8D4B0]">
+                  Mga Tuntunin at Kondisyon
+                </Text>
+              </View>
 
-                            <Text className="font-poppins-bold text-ink text-sm mb-1">V. Pagbabago ng Tuntunin</Text>
-                            <Text className="font-poppins text-ink text-xs mb-4 text-justify">
-                                • Maaaring baguhin o i-update ng mananaliksik ang mga tuntunin at kundisyon kung kinakailangan.
-                            </Text>
+              {/* Modal Content Scroll */}
+              <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={true}>
+                <Text className="mb-1 font-poppins-bold text-sm text-ink">I. Layunin</Text>
+                <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                  Ang aplikasyon ay isinagawa upang tulungan ang mga mag-aaral sa kanilang pagbabasa
+                  na may pang-unawa. Ito ay nakatuon sa mga kasanayang paghinuha, paglilinaw,
+                  pagsisiyasat, at pagbubuod upang mapaunlad ang kanilang pang-unawa at kritikal na
+                  pag-iisip.
+                </Text>
 
-                            {/* Privacy Notice */}
-                            <Text className="font-poppins text-ink text-xs mb-2 text-justify italic opacity-80">
-                                Ang aplikasyon na ito ay nangongolekta ng datos ng iyong paggamit (mga sagot, progreso, atbp.) na nakaugnay sa iyong pagkakakilanlan para sa layunin ng pananaliksik.
-                            </Text>
+                <Text className="mb-1 font-poppins-bold text-sm text-ink">
+                  II. Saklaw ng Paggamit
+                </Text>
+                <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                  • Ang aplikasyon ay gagamitin lamang para sa mga gawaing pang-akademiko at hindi
+                  para sa personal, komersyal, o libangan.{'\n'}• Ang mga mag-aaral ay inaasahang
+                  gagamit ng aplikasyon sa tamang paraan at ayon sa itinakdang layunin ng
+                  pananaliksik.
+                </Text>
 
-                            <View className="h-[1px] bg-ink/20 my-4" />
+                <Text className="mb-1 font-poppins-bold text-sm text-ink">
+                  III. Pagkapribado at Kumpidensyalidad
+                </Text>
+                <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                  • Ang lahat ng datos na ilalagay ng mag-aaral sa aplikasyon ay mananatiling
+                  pribado at kumpidensyal.{'\n'}• Hindi isasapubliko ang mga sagot o impormasyon
+                  maliban kung bahagi ng pagsusuri sa pananaliksik.{'\n'}• Walang personal na
+                  pagkakakilanlan ang ilalantad sa anumang ulat o presentasyon.{'\n'}• Sa paggamit
+                  ng aplikasyon, ang mag-aaral ay nagbibigay ng pahintulot na gamitin ang kanyang
+                  mga sagot para sa layunin ng pananaliksik.
+                </Text>
 
-                            <Text className="font-poppins-bold text-ink text-xs mb-4">
-                                Lagyan ng tsek ( ✓ ) ang kahon na naaayon sa iyong desisyon/pahintulot bago magpatuloy:
-                            </Text>
+                <Text className="mb-1 font-poppins-bold text-sm text-ink">
+                  IV. Pananagutan ng Gumagamit
+                </Text>
+                <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                  • Ang mag-aaral ay inaasahang magbibigay ng tapat, malinaw, at makabuluhang sagot.
+                  {'\n'}• Ang mag-aaral ay may pananagutan na huwag maglagay ng maling impormasyon o
+                  anumang hindi angkop na sagot.
+                </Text>
 
-                            {/* Checkboxes */}
-                            <CustomCheckbox
-                                label="Ako ay pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
-                                isSelected={agreed === true}
-                                onSelect={() => setAgreed(true)}
-                            />
+                <Text className="mb-1 font-poppins-bold text-sm text-ink">
+                  V. Pagbabago ng Tuntunin
+                </Text>
+                <Text className="mb-4 text-justify font-poppins text-xs text-ink">
+                  • Maaaring baguhin o i-update ng mananaliksik ang mga tuntunin at kundisyon kung
+                  kinakailangan.
+                </Text>
 
-                            <CustomCheckbox
-                                label="Hindi ako pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
-                                isSelected={agreed === false}
-                                onSelect={() => setAgreed(false)}
-                            />
+                {/* Privacy Notice */}
+                <Text className="mb-2 text-justify font-poppins text-xs italic text-ink opacity-80">
+                  Ang aplikasyon na ito ay nangongolekta ng datos ng iyong paggamit (mga sagot,
+                  progreso, atbp.) na nakaugnay sa iyong pagkakakilanlan para sa layunin ng
+                  pananaliksik.
+                </Text>
 
-                            <View className="h-10" />
-                        </ScrollView>
+                <View className="my-4 h-[1px] bg-ink/20" />
 
-                        {/* Close Button */}
-                        <TouchableOpacity
-                            className="bg-ink p-4 items-center justify-center"
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Text className="text-white font-poppins-bold uppercase tracking-widest">Isara</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+                <Text className="mb-4 font-poppins-bold text-xs text-ink">
+                  Lagyan ng tsek ( ✓ ) ang kahon na naaayon sa iyong desisyon/pahintulot bago
+                  magpatuloy:
+                </Text>
 
-            <StatusBar style="light" />
-        </ImageBackground>
+                {/* Checkboxes */}
+                <CustomCheckbox
+                  label="Ako ay pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
+                  isSelected={agreed === true}
+                  onSelect={() => setAgreed(true)}
+                />
+
+                <CustomCheckbox
+                  label="Hindi ako pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
+                  isSelected={agreed === false}
+                  onSelect={() => setAgreed(false)}
+                />
+
+                <View className="h-10" />
+              </ScrollView>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                className="items-center justify-center bg-ink p-4"
+                onPress={() => setModalVisible(false)}>
+                <Text className="font-poppins-bold uppercase tracking-widest text-white">
+                  Isara
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <StatusBar style="light" />
+      </ImageBackground>
     );
 }
