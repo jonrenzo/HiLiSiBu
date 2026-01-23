@@ -82,85 +82,84 @@ export default function CharactersScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#4a342e]">
-            <SafeAreaView className="flex-1 bg-[#4a342e]">
+      <View className="flex-1 bg-[#4f2b21]">
+        <View className="absolute right-[-50] top-[-50] h-64 w-64 rounded-full bg-[#5d4037] opacity-20" />
+        <View className="absolute bottom-[100] left-[-30] h-40 w-40 rounded-full bg-[#3e2723] opacity-30" />
 
-                {/* Header Title */}
-                <View className={`px-4 pb-4 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
-                    <Text className="text-[#f5f5f5] text-center font-serif text-xl font-bold tracking-wide shadow-md">
-                        Mga Tauhan
-                    </Text>
-                    <Text className="text-[#bcaaa4] text-center font-poppins text-xs uppercase tracking-widest mt-1">
-                        Kabanata 1 - 6
-                    </Text>
-                </View>
+        <SafeAreaView className="flex-1 bg-[#4f2b21]">
+          {/* Header Title */}
+          <View className={`px-4 pb-4 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
+            <Text className="text-center font-serif text-xl font-bold tracking-wide text-[#f5f5f5] shadow-md">
+              Mga Tauhan
+            </Text>
+            <Text className="mt-1 text-center font-poppins text-xs uppercase tracking-widest text-[#bcaaa4]">
+              Kabanata 1 - 6
+            </Text>
+          </View>
 
-                {/* Main Content Container */}
-                <View className="flex-1 bg-[#efede6] mx-4 rounded-t-[30px] overflow-hidden shadow-2xl">
-                    <ScrollView
-                        className="flex-1 px-5 pt-6"
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 100 }} // Padding for bottom tab bar
-                    >
-                        {characters.map((char) => {
-                            const isExpanded = expandedId === char.id;
+          {/* Main Content Container */}
+          <View className="mx-4 flex-1 overflow-hidden rounded-t-[30px] bg-[#efede6] shadow-2xl">
+            <ScrollView
+              className="flex-1 px-5 pt-6"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }} // Padding for bottom tab bar
+            >
+              {characters.map((char) => {
+                const isExpanded = expandedId === char.id;
 
-                            return (
-                                <TouchableOpacity
-                                    key={char.id}
-                                    activeOpacity={0.9}
-                                    onPress={() => toggleDescription(char.id)}
-                                    className={`mb-6 rounded-2xl border border-[#d7ccc8] overflow-hidden bg-white shadow-sm transition-all duration-300`}
-                                >
-                                    <View className="flex-row p-4 items-center">
+                return (
+                  <TouchableOpacity
+                    key={char.id}
+                    activeOpacity={0.9}
+                    onPress={() => toggleDescription(char.id)}
+                    className={`mb-6 overflow-hidden rounded-2xl border border-[#d7ccc8] bg-white shadow-sm transition-all duration-300`}>
+                    <View className="flex-row items-center p-4">
+                      {/* Portrait Frame (Image) */}
+                      <View className="relative">
+                        {/* Gold Frame Effect using borders */}
+                        <View className="h-24 w-20 overflow-hidden rounded-lg border-[3px] border-[#b8860b] bg-[#4a342e] shadow-md">
+                          <Image
+                            source={char.image}
+                            className="h-full w-full opacity-90"
+                            resizeMode="cover"
+                          />
+                        </View>
+                        {/* Decorative corner dots for frame effect (Optional) */}
+                        <View className="absolute left-0 top-0 m-0.5 h-1.5 w-1.5 rounded-full bg-[#ffd700]" />
+                        <View className="absolute right-0 top-0 m-0.5 h-1.5 w-1.5 rounded-full bg-[#ffd700]" />
+                        <View className="absolute bottom-0 left-0 m-0.5 h-1.5 w-1.5 rounded-full bg-[#ffd700]" />
+                        <View className="absolute bottom-0 right-0 m-0.5 h-1.5 w-1.5 rounded-full bg-[#ffd700]" />
+                      </View>
 
-                                        {/* Portrait Frame (Image) */}
-                                        <View className="relative">
-                                            {/* Gold Frame Effect using borders */}
-                                            <View className="w-20 h-24 rounded-lg border-[3px] border-[#b8860b] shadow-md bg-[#4a342e] overflow-hidden">
-                                                <Image
-                                                    source={char.image}
-                                                    className="w-full h-full opacity-90"
-                                                    resizeMode="cover"
-                                                />
-                                            </View>
-                                            {/* Decorative corner dots for frame effect (Optional) */}
-                                            <View className="absolute top-0 left-0 w-1.5 h-1.5 bg-[#ffd700] rounded-full m-0.5" />
-                                            <View className="absolute top-0 right-0 w-1.5 h-1.5 bg-[#ffd700] rounded-full m-0.5" />
-                                            <View className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-[#ffd700] rounded-full m-0.5" />
-                                            <View className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-[#ffd700] rounded-full m-0.5" />
-                                        </View>
+                      {/* Name & Hint */}
+                      <View className="ml-4 flex-1 justify-center">
+                        <Text className="mb-1 font-poppins-bold text-lg leading-6 text-[#3e2723]">
+                          {char.name}
+                        </Text>
+                        {!isExpanded && (
+                          <Text className="font-poppins text-[10px] italic text-[#8d6e63]">
+                            Pindutin upang makilala...
+                          </Text>
+                        )}
+                      </View>
+                    </View>
 
-                                        {/* Name & Hint */}
-                                        <View className="flex-1 ml-4 justify-center">
-                                            <Text className="text-[#3e2723] font-poppins-bold text-lg leading-6 mb-1">
-                                                {char.name}
-                                            </Text>
-                                            {!isExpanded && (
-                                                <Text className="text-[#8d6e63] font-poppins text-[10px] italic">
-                                                    Pindutin upang makilala...
-                                                </Text>
-                                            )}
-                                        </View>
-                                    </View>
-
-                                    {/* Description (Hidden by default) */}
-                                    {isExpanded && (
-                                        <View className="px-4 pb-5 pt-0">
-                                            <View className="h-[1px] bg-[#d7ccc8] w-full mb-3 opacity-50" />
-                                            <Text className="text-[#5d4037] font-poppins text-sm leading-6 text-justify">
-                                                {char.description}
-                                            </Text>
-                                        </View>
-                                    )}
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
-                </View>
-
-            </SafeAreaView>
-            <StatusBar style="light" backgroundColor="#4a342e" />
-        </View>
+                    {/* Description (Hidden by default) */}
+                    {isExpanded && (
+                      <View className="px-4 pb-5 pt-0">
+                        <View className="mb-3 h-[1px] w-full bg-[#d7ccc8] opacity-50" />
+                        <Text className="text-justify font-poppins text-sm leading-6 text-[#5d4037]">
+                          {char.description}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </SafeAreaView>
+        <StatusBar style="light" backgroundColor="#4a342e" />
+      </View>
     );
 }

@@ -59,68 +59,60 @@ export default function HomeScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#4a342e]">
-            {/* Safe Area for Status Bar */}
-            <SafeAreaView className="bg-[#4a342e]" />
+      <View className="flex-1 bg-[#4f2b21]">
+        {/* Safe Area for Status Bar */}
+        <SafeAreaView className="bg-[#4a342e]" />
 
-            {/* Main Header Title */}
-            <View className={`px-4 pb-6 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
-                <View className="bg-[#5d4037] py-3 px-6 rounded-lg border border-[#6d4c41] shadow-lg">
-                    <Text className="text-[#f5f5f5] text-center font-serif text-xl font-bold tracking-wide">
-                        Mga Piling Kabanata
-                    </Text>
-                </View>
-            </View>
-
-            {/* White Scrollable Container */}
-            <View className="flex-1 bg-[#efede6] mx-4 rounded-t-[30px] overflow-hidden shadow-2xl">
-                <ScrollView
-                    className="flex-1 px-5 pt-6"
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 100 }}
-                >
-                    {chapters.map((chapter) => (
-                        <View key={chapter.id} className="mb-8 bg-transparent">
-
-                            {/* Chapter Image Card */}
-                            <View className="w-full h-40 rounded-xl overflow-hidden mb-3 bg-gray-300 shadow-sm border border-gray-200">
-                                <Image
-                                    source={chapter.image}
-                                    className="w-full h-full"
-                                    resizeMode="cover"
-                                />
-                            </View>
-
-                            {/* Chapter Tag (e.g. KABANATA I) */}
-                            <View className="self-start bg-[#4e342e] px-3 py-1 rounded-sm mb-1">
-                                <Text className="text-[#e8d4b0] text-[10px] font-bold tracking-widest uppercase font-poppins">
-                                    {chapter.tag}
-                                </Text>
-                            </View>
-
-                            {/* Chapter Title */}
-                            <Text className="text-black text-2xl font-poppins-bold mb-3 leading-tight">
-                                {chapter.title}
-                            </Text>
-
-                            {/* Action Button */}
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                onPress={() => handleRead(chapter)}
-                                className="bg-[#4e342e] py-3 rounded-full flex-row justify-center items-center shadow-md active:opacity-90"
-                            >
-                                <Ionicons name='book-outline' size={18} color='#FFFFFF' className='px-2'/>
-                                <Text className="text-white font-poppins-bold text-sm tracking-wide">
-                                    Basahin at Sagutin ang Nobela
-                                </Text>
-                            </TouchableOpacity>
-
-                        </View>
-                    ))}
-                </ScrollView>
-            </View>
-
-            <StatusBar style="light" backgroundColor="#4a342e" />
+        {/* Main Header Title */}
+        <View className={`px-4 pb-6 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
+          <View className="rounded-lg border border-[#6d4c41] bg-[#5d4037] px-6 py-3 shadow-lg">
+            <Text className="text-center font-poppins-bold text-2xl tracking-wide text-[#f5f5f5]">
+              Mga Piling Kabanata
+            </Text>
+          </View>
         </View>
+
+        {/* White Scrollable Container */}
+        <View className="mx-4 flex-1 overflow-hidden rounded-t-[30px] bg-[#efede6] shadow-2xl">
+          <ScrollView
+            className="flex-1 px-5 pt-6"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}>
+            {chapters.map((chapter) => (
+              <View key={chapter.id} className="mb-8 bg-transparent">
+                {/* Chapter Image Card */}
+                <View className="mb-3 h-40 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-300 shadow-sm">
+                  <Image source={chapter.image} className="h-full w-full" resizeMode="cover" />
+                </View>
+
+                {/* Chapter Tag (e.g. KABANATA I) */}
+                <View className="mb-1 self-start rounded-sm bg-[#4e342e] px-3 py-1">
+                  <Text className="font-poppins text-[10px] font-bold uppercase tracking-widest text-[#e8d4b0]">
+                    {chapter.tag}
+                  </Text>
+                </View>
+
+                {/* Chapter Title */}
+                <Text className="mb-3 font-poppins-bold text-2xl leading-tight text-black">
+                  {chapter.title}
+                </Text>
+
+                {/* Action Button */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => handleRead(chapter)}
+                  className="flex-row items-center justify-center rounded-full bg-[#4f2b21] py-3 shadow-md active:opacity-90">
+                  <Ionicons name="book-outline" size={18} color="#FFFFFF" className="px-2" />
+                  <Text className="font-poppins-bold text-sm tracking-wide text-white">
+                    Basahin at Sagutin ang Nobela
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        <StatusBar style="light" backgroundColor="#4f2b21" />
+      </View>
     );
 }
