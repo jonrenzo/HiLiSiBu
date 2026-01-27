@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -7,6 +7,9 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 
 // UPDATED IMPORT: Pointing to the file in the SAME folder based on your screenshot
 import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod } from './ActivityComponents';
+
+// IMPORT DB SERVICE
+import { areChaptersRead } from '../../services/db';
 
 type ActivityScreenRouteProp = RouteProp<RootStackParamList, 'ActivityContainer'>;
 
@@ -27,6 +30,51 @@ export default function ActivityContainerScreen() {
   const [activeTab, setActiveTab] = useState<
     'paghihinuha' | 'pagsisiyasat' | 'paglilinaw' | 'pagbubuod'
   >('paghihinuha');
+
+  // STATE: Controls if post-reading activities are locked
+  const [isLocked, setIsLocked] = useState(true);
+
+  // EFFECT: Check database when screen loads
+  useEffect(() => {
+    const checkChapterProgress = async () => {
+      try {
+        // 1. Convert rangeId "01-03" into an array of numbers [1, 2, 3]
+        const [startStr, endStr] = rangeId.split('-');
+        const start = parseInt(startStr, 10);
+        const end = parseInt(endStr, 10);
+
+        const chaptersToCheck: number[] = [];
+        for (let i = start; i <= end; i++) {
+          chaptersToCheck.push(i);
+        }
+
+        // 2. Check DB if all these chapters are read
+        const allRead = await areChaptersRead(chaptersToCheck);
+
+        // 3. If all read, unlock. If not, keep locked.
+        setIsLocked(!allRead);
+      } catch (error) {
+        console.error('Error checking progress:', error);
+        setIsLocked(true); // Default to locked on error
+      }
+    };
+
+    checkChapterProgress();
+  }, [rangeId]);
+
+  // HANDLER: Controls tab switching
+  const handleTabPress = (tab: typeof activeTab) => {
+    // 'paghihinuha' is PRE-reading, so it's always allowed.
+    // The other tabs are POST-reading, so check lock status.
+    if (tab !== 'paghihinuha' && isLocked) {
+      Alert.alert(
+        'Naka-lock ang Gawain',
+        'Kailangan munang basahin ang lahat ng kabanata sa saklaw na ito bago buksan ang gawaing ito.'
+      );
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -63,30 +111,36 @@ export default function ActivityContainerScreen() {
 
         {/* Navigation Tabs */}
         <View className="mx-4 mt-4 flex-row justify-between rounded-2xl border border-[#8d6e63] bg-[#6d4c41] p-2">
+          {/* Paghihinuha (Always Unlocked) */}
           <TabButton
             active={activeTab === 'paghihinuha'}
-            onPress={() => setActiveTab('paghihinuha')}
+            onPress={() => handleTabPress('paghihinuha')}
             icon="search"
             label="Paghihinuha"
           />
+
+          {/* Locked Tabs */}
           <TabButton
             active={activeTab === 'pagsisiyasat'}
-            onPress={() => setActiveTab('pagsisiyasat')}
+            onPress={() => handleTabPress('pagsisiyasat')}
             icon="eye"
             label="Pagsisiyasat"
+            locked={isLocked}
           />
           <TabButton
             active={activeTab === 'paglilinaw'}
-            onPress={() => setActiveTab('paglilinaw')}
+            onPress={() => handleTabPress('paglilinaw')}
             icon="projector-screen"
             label="Paglilinaw"
             isMaterialIcon
+            locked={isLocked}
           />
           <TabButton
             active={activeTab === 'pagbubuod'}
-            onPress={() => setActiveTab('pagbubuod')}
+            onPress={() => handleTabPress('pagbubuod')}
             icon="file-alt"
             label="Pagbubuod"
+            locked={isLocked}
           />
         </View>
 
@@ -102,17 +156,37 @@ export default function ActivityContainerScreen() {
   );
 }
 
-const TabButton = ({ active, onPress, icon, label, isMaterialIcon = false }: any) => (
+// Updated TabButton to handle visual locking
+const TabButton = ({
+  active,
+  onPress,
+  icon,
+  label,
+  isMaterialIcon = false,
+  locked = false,
+}: any) => (
   <TouchableOpacity
     onPress={onPress}
-    className={`flex-1 items-center rounded-xl p-2 ${active ? 'bg-[#efede6]' : ''}`}>
+    activeOpacity={locked ? 1 : 0.7} // Remove click effect if locked
+    className={`relative flex-1 items-center rounded-xl p-2 ${
+      active ? 'bg-[#efede6]' : ''
+    } ${locked ? 'opacity-50' : 'opacity-100'}`} // Dim if locked
+  >
     {isMaterialIcon ? (
       <MaterialCommunityIcons name={icon} size={18} color={active ? '#3e2723' : '#e8d4b0'} />
     ) : (
       <FontAwesome5 name={icon} size={16} color={active ? '#3e2723' : '#e8d4b0'} />
     )}
+
     <Text className={`mt-1 text-xs font-bold ${active ? 'text-[#3e2723]' : 'text-[#e8d4b0]'}`}>
       {label}
     </Text>
+
+    {/* Lock Icon Overlay */}
+    {locked && (
+      <View className="absolute right-2 top-1">
+        <FontAwesome5 name="lock" size={10} color="#e8d4b0" />
+      </View>
+    )}
   </TouchableOpacity>
 );
