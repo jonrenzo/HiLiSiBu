@@ -4,11 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-
-// UPDATED IMPORT: Pointing to the file in the SAME folder based on your screenshot
-import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod } from './ActivityComponents';
-
-// IMPORT DB SERVICE
+import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod, Paghihinuha4to6 } from './ActivityComponents';
 import { areChaptersRead } from '../../services/db';
 
 type ActivityScreenRouteProp = RouteProp<RootStackParamList, 'ActivityContainer'>;
@@ -81,6 +77,7 @@ export default function ActivityContainerScreen() {
       case 'paghihinuha':
         // Only show the specific component if the range is 01-03
         if (rangeId === '01-03') return <Paghihinuha />;
+        if (rangeId === '04-06') return <Paghihinuha4to6/>;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'pagsisiyasat':
         return <Pagsisiyasat />;
