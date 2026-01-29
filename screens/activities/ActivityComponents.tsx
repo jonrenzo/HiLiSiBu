@@ -428,3 +428,343 @@ export const Paghihinuha4to6 = () => {
     </View>
   );
 };
+
+
+// ==================================================
+// PAGLILINAW (Kabanata 4-6) - FIXED DICE & INPUT
+// ==================================================
+const DiceFace = ({ value }: { value: number }) => {
+  const size = 56; // Box size (w-14)
+  const dotSize = 10;
+  const padding = 8; // Distance from edge
+
+  // Reusable Dot Component
+  const Dot = ({ pos }: { pos: string }) => {
+    const style: any = {
+      width: dotSize,
+      height: dotSize,
+      borderRadius: dotSize / 2,
+      backgroundColor: 'black',
+      position: 'absolute',
+    };
+
+    // Calculate positions manually to ensure they stay inside
+    if (pos.includes('top')) style.top = padding;
+    if (pos.includes('bottom')) style.bottom = padding;
+    if (pos.includes('left')) style.left = padding;
+    if (pos.includes('right')) style.right = padding;
+
+    // Middle vertical alignment
+    if (pos.includes('midY')) style.top = (size - dotSize) / 2;
+
+    // Center alignment
+    if (pos === 'center') {
+      style.top = (size - dotSize) / 2;
+      style.left = (size - dotSize) / 2;
+    }
+
+    return <View style={style} />;
+  };
+
+  const renderDots = () => {
+    switch (value) {
+      case 1: return <Dot pos="center" />;
+      case 2: return <><Dot pos="top-left" /><Dot pos="bottom-right" /></>;
+      case 3: return <><Dot pos="top-left" /><Dot pos="center" /><Dot pos="bottom-right" /></>;
+      case 4: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
+      case 5: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="center" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
+      case 6: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="midY-left" /><Dot pos="midY-right" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
+      default: return null;
+    }
+  };
+
+  return (
+      <View style={{ width: size, height: size, backgroundColor: 'white', borderWidth: 2, borderColor: '#3e2723', borderRadius: 12, position: 'relative' }}>
+        {renderDots()}
+      </View>
+  );
+};
+export const Paglilinaw4to6 = () => {
+  const data = [
+    {
+      id: 1,
+      text: "Ano ang ibig sabihin ni Tenyente Guevarra nang sabihin niyang 'mag-ingat' si Ibarra? Ipaliwanag ang kontekstong historikal at personal na dahilan kung bakit mahalaga ang babalang ito."
+    },
+    {
+      id: 2,
+      text: "Paano naging simbolo ng kawalang-katarungan ang sinapit ni Don Rafael? Ipaliwanag batay sa pangyayari sa artilyero at sa mga paratang laban sa kanya."
+    },
+    {
+      id: 3,
+      text: "Sa Kabanata V, bakit inihambing ang liwanag mula sa bahay ni Maria Clara sa isang 'tala sa gabing madilim'? Ano ang ipinapakitang emosyon at simbolo nito sa nararamdaman ni Ibarra?"
+    },
+    {
+      id: 4,
+      text: "Ano ang ipinapakitang katangian ni Padre Sibyla at ng batang Pransiskano sa eksena sa bahay ni Kapitan Tiyago? Ipaliwanag kung paano nagkakaiba ang kanilang kilos at inuusal batay sa inilalahad ng teksto."
+    },
+    {
+      id: 5,
+      text: "Bakit sinasabing may 'kapangyarihan' ang pag-ibig sa pamilya at kabanata sa karakter nina Ibarra at Maria Clara sa Kabanata V-VI? Ipaliwanag kung paano ito nagdudulot ng pag-asa o pighati sa mga tauhan."
+    },
+    {
+      id: 6,
+      text: "Ano ang ipinahihiwatig ng pagiging 'tunay na Espanyol' ni Kapitan Tiyago ayon sa kanyang asal at paniniwala? Linawin kung paano ito nagpapakita ng kalagayan ng lipunang Pilipino noong panahon ng kolonyalismo."
+    }
+  ];
+
+  return (
+      <View className="pb-8">
+        {/* Header */}
+        <View className="mb-4 flex-row items-center">
+          <MaterialCommunityIcons name="dice-5" size={24} color="#3e2723" />
+          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paglilinaw</Text>
+        </View>
+
+        {/* Instructions */}
+        <Text className="mb-6 font-poppins text-xs text-justify text-[#5d4037] leading-5">
+          <Text className="font-bold">Panuto:</Text> Pindutin ang dice at sagutin ang katanungang katapat ng numerong lumabas. Batay sa kabanatang nabasa, ipaliwanag ang kahulugan, simbolo, at damdaming ipinapahayag ng bawat tanong.
+        </Text>
+
+        {/* Questions List */}
+        <View>
+          {data.map((item) => (
+              <View key={item.id} className="flex-row items-start mb-8">
+
+                {/* Left: Fixed Dice */}
+                <View className="mr-4 pt-1">
+                  <DiceFace value={item.id} />
+                </View>
+
+                {/* Right: Question & Answer Stack */}
+                <View className="flex-1">
+                  {/* Question Bubble */}
+                  <View className="bg-white border-2 border-[#3e2723] rounded-2xl p-3 shadow-sm mb-3">
+                    <Text className="font-poppins text-[10px] text-justify text-[#3e2723] leading-4">
+                      {item.text}
+                    </Text>
+                  </View>
+
+                  {/* Answer Input Bubble */}
+                  <View className="bg-[#efede6] border-2 border-[#3e2723] rounded-xl p-2 shadow-inner">
+                    <TextInput
+                        placeholder="Isulat ang iyong sagot dito..."
+                        placeholderTextColor="#a1887f"
+                        multiline
+                        className="text-xs font-poppins text-[#3e2723] min-h-[50px]"
+                        textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+              </View>
+          ))}
+        </View>
+      </View>
+  );
+};
+
+// ==================================================
+// PAGSISIYASAT (Kabanata 4-6) - CASES 1, 2 & 3
+// Matches all G2 FINAL NAA images
+// ==================================================
+export const Pagsisiyasat4to6 = () => {
+  return (
+      <View className="pb-8">
+        {/* Main Header */}
+        <View className="mb-6 flex-row items-center">
+          <FontAwesome5 name="eye" size={24} color="#3e2723" />
+          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagsisiyasat</Text>
+        </View>
+
+        {/* ==================== CASE 1 SECTION ==================== */}
+        <View className="mb-8">
+          <Text className="font-serif text-lg font-bold text-black mb-2">Case 1: Sino ang Suspek?</Text>
+
+          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
+            <Text className="font-bold">Panuto:</Text> Batay sa nabasang akda, Isulat ang pangalan ng tatlong (3) tauhan na posibleng suspek o may motibo sa pagkakakulong sa ama ni Crisostomo Ibarra. Isulat ito sa bawat nakalaang kahon.
+          </Text>
+
+          {/* Suspects Row */}
+          <View className="flex-row justify-between px-2">
+            {[1, 2, 3].map((i) => (
+                <View key={i} className="w-[30%] items-center">
+                  {/* Silhouette Frame */}
+                  <View className="w-full aspect-square bg-white border-2 border-black rounded-lg mb-2 items-center justify-end overflow-hidden relative">
+                    <FontAwesome5 name="user-alt" size={55} color="black" style={{ marginBottom: -8 }} />
+                    <Text className="absolute top-1 text-white font-serif font-bold text-4xl shadow-sm">?</Text>
+                  </View>
+
+                  {/* Yellow Input Box */}
+                  <TextInput
+                      className="w-full h-8 bg-[#fdd835] border border-[#fbc02d] rounded-md text-center text-[10px] font-poppins-bold text-black p-0"
+                  />
+                </View>
+            ))}
+          </View>
+        </View>
+
+        {/* ==================== CASE 2 SECTION ==================== */}
+        <View className="mb-8">
+          <View className="flex-row items-center mb-2">
+            <FontAwesome5 name="user-secret" size={20} color="#2e7d32" />
+            <Text className="font-serif text-lg font-bold text-black ml-2">Case 2: Ano ang ebidensya?</Text>
+          </View>
+
+          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
+            <Text className="font-bold">Panuto:</Text> Mula sa mga suspek na iyong inilagay sa Case 1, ilahad mo ang motibo kung bakit sila ang iyong pinaghihinalaang nagpakulong sa ama ni Crisostomo Ibarra.
+          </Text>
+
+          {/* STRICT TABLE LAYOUT */}
+          <View className="border-2 border-black bg-white mt-2">
+            {/* Table Header */}
+            <View className="flex-row border-b-2 border-black h-12 bg-white">
+              <View className="flex-1 border-r-2 border-black items-center justify-center">
+                <Text className="font-serif font-bold text-sm text-black">Motibo</Text>
+              </View>
+              <View className="flex-1 items-center justify-center">
+                <Text className="font-serif font-bold text-sm text-black">Paliwanag</Text>
+              </View>
+            </View>
+
+            {/* Table Rows */}
+            {[1, 2, 3].map((row, index) => (
+                <View key={row} className={`flex-row h-16 ${index !== 2 ? 'border-b border-black' : ''}`}>
+                  <View className="flex-1 border-r-2 border-black justify-center px-4 bg-white">
+                    <TextInput className="w-full h-10 border-b-2 border-black text-xs font-poppins text-black" placeholder="" />
+                  </View>
+                  <View className="flex-1 justify-center px-4 bg-white">
+                    <TextInput className="w-full h-10 border-b-2 border-black text-xs font-poppins text-black" placeholder="" />
+                  </View>
+                </View>
+            ))}
+          </View>
+        </View>
+
+        {/* ==================== CASE 3 SECTION (NEW) ==================== */}
+        <View>
+          <View className="flex-row items-center mb-2">
+            {/* Silhouette Icon Header */}
+            <View className="relative mr-2">
+              <FontAwesome5 name="user-alt" size={24} color="black" />
+              <Text className="absolute top-0 right-1 text-white font-bold text-[10px]">?</Text>
+            </View>
+            <Text className="font-serif text-lg font-bold text-black">Case 3 : Sino ang tunay na salarin?</Text>
+          </View>
+
+          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
+            <Text className="font-bold">Panuto:</Text> Sagutin ang tanong sa ibaba. Ipaliwanag at ilahad batay sa iyong pagkakaunawa sa nobela.
+          </Text>
+
+          {/* Large Question Box */}
+          <View className="border-2 border-black bg-white p-5">
+            <Text className="font-serif font-bold text-xs text-black text-justify mb-4 leading-5">
+              Batay sa iyong pagsusuri sa nobela, sino ang tunay na salarin sa pagkakakulong ng ama ni Crisostomo Ibarra, at paano niya naisakatuparan ang kaniyang masamang layunin?
+            </Text>
+
+            {/* Lined Writing Area */}
+            <View className="relative h-64 mt-2">
+              {/* Background Lines */}
+              <View className="absolute top-0 left-0 right-0 bottom-0 justify-between py-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((line) => (
+                    <View key={line} className="w-full border-b border-black h-6" />
+                ))}
+              </View>
+
+              {/* Input Overlay */}
+              <TextInput
+                  className="flex-1 text-xs font-poppins text-black leading-7 p-0 pt-1"
+                  multiline
+                  textAlignVertical="top"
+                  style={{ lineHeight: 28 }} // Adjust line height to match border spacing
+              />
+            </View>
+          </View>
+        </View>
+
+      </View>
+  );
+};
+
+
+// ==================================================
+// PAGBUBUOD (Kabanata 4-6) - Emoji Summary
+// Fixed: Emojis are now a placeholder inside the input
+// ==================================================
+export const Pagbubuod4to6 = () => {
+  const rubric = [
+    { label: "Pagkilala sa Pangunahing Ideya – Malinaw na naipakita ang pangunahing mensahe ng kabanata batay sa ibinigay na emoji; hindi nalilihis sa sentral na tema.", points: "5 puntos" },
+    { label: "Pagluhanay ng Mahahalagang Pangyayari – Kumpleto at lohikal ang pagkakasunod-sunod ng mahahalagang pangyayari; walang labis na detalye.", points: "5 puntos" },
+    { label: "Pagiging Komprehensibo at Maikli – Napanatili ang kabuuang saysay ng kabanata sa pinaikling paraan; hindi sumobra sa detalye at hindi nagkulang sa personal na opinyon.", points: "5 puntos" },
+    { label: "Kaayusan at Kalinawan ng Paglalahad – Malinaw, organisado, at madaling basahin ang buod; may maayos na daloy ng ideya.", points: "5 puntos" },
+    { label: "Gamit ng Wika – Wastong baybay, bantas, at gramatika; malinaw ang mga pangungusap.", points: "5 puntos" },
+  ];
+
+  return (
+      <View className="pb-8">
+        {/* Header */}
+        <View className="mb-4 flex-row items-center">
+          <FontAwesome5 name="edit" size={24} color="#3e2723" />
+          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagbubuod</Text>
+        </View>
+
+        {/* Instruction Box */}
+        <Text className="font-poppins text-xs text-justify leading-5 text-[#5d4037] mb-4">
+          <Text className="font-bold">Panuto:</Text> Basahing mabuti ang itinakdang kabanata mula sa Nobelang Noli Me Tangere. Gamit ang mga emoji, sumulat ng isang maikling buod na binubuo ng apat (4) hanggang anim (6) na pangungusap.
+          {"\n\n"}
+          Tiyaking malinaw na nakasaad ang pangunahing ideya, mahahalagang pangyayari, at tamang pagkakasunod-sunod ng mga ito. Iwasan ang paglalagay ng labis na detalye, sariling opinyon, o komentaryo; ibatay lamang ang sagot sa mismong nilalaman ng kabanata.
+        </Text>
+
+        {/* Writing Area (Lined Paper) */}
+        <View className="mb-6 overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm relative min-h-[350px]">
+
+          {/* TextInput Overlay with Emoji Placeholder */}
+          <TextInput
+              multiline
+              // The emoji sequence is now here as a placeholder example
+              placeholder="📜🏠😲🤫🔥😮👥   (Magsimula rito...)"
+              placeholderTextColor="#757575"
+              className="flex-1 pt-10 px-4 text-xs font-poppins  leading-[32px]"
+              textAlignVertical="top"
+              style={{ lineHeight: 70 }} // Matches the height of the background lines
+          />
+        </View>
+
+        {/* Rubric Table */}
+        <View className="border-2 border-black bg-[#f5f5f5] mb-8">
+          {/* Table Header */}
+          <View className="flex-row border-b border-black bg-[#d7ccc8] h-10">
+            <View className="flex-1 border-r border-black items-center justify-center">
+              <Text className="font-poppins-bold text-[10px] text-black">Pamantayan</Text>
+            </View>
+            <View className="w-16 items-center justify-center">
+              <Text className="font-poppins-bold text-[10px] text-black">Puntos</Text>
+            </View>
+          </View>
+
+          {/* Table Rows */}
+          {rubric.map((row, index) => (
+              <View key={index} className="flex-row border-b border-black bg-white">
+                <View className="flex-1 border-r border-black p-2 justify-center">
+                  <Text className="font-poppins text-xs text-justify text-black leading-3">
+                    <Text className="font-bold">{row.label.split('–')[0]} –</Text>
+                    {row.label.split('–')[1]}
+                  </Text>
+                </View>
+                <View className="w-16 p-2 items-center justify-center bg-[#efede6]">
+                  <Text className="font-poppins-bold text-xs text-black">{row.points}</Text>
+                </View>
+              </View>
+          ))}
+
+          {/* Total Row */}
+          <View className="flex-row bg-[#d7ccc8] h-8">
+            <View className="flex-1 border-r border-black items-center justify-center">
+              <Text className="font-poppins-bold text-[10px] text-black">Kabuuang Puntos</Text>
+            </View>
+            <View className="w-16 items-center justify-center">
+              <Text className="font-poppins-bold text-[10px] text-black">25 puntos</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+  );
+};

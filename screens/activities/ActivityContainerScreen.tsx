@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod, Paghihinuha4to6 } from './ActivityComponents';
+import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod, Paghihinuha4to6, Paglilinaw4to6, Pagsisiyasat4to6, Pagbubuod4to6 } from './ActivityComponents';
 import { areChaptersRead } from '../../services/db';
 
 type ActivityScreenRouteProp = RouteProp<RootStackParamList, 'ActivityContainer'>;
@@ -80,11 +80,17 @@ export default function ActivityContainerScreen() {
         if (rangeId === '04-06') return <Paghihinuha4to6/>;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'pagsisiyasat':
-        return <Pagsisiyasat />;
+        if (rangeId === '01-03') return <Pagsisiyasat/>;
+        if (rangeId === '04-06') return <Pagsisiyasat4to6/>;
+        return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'paglilinaw':
-        return <Paglilinaw />;
+        if (rangeId === '01-03') return <Paglilinaw/>;
+        if (rangeId === '04-06') return <Paglilinaw4to6/>;
+        return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'pagbubuod':
-        return <Pagbubuod />;
+        if (rangeId === '01-03') return <Pagbubuod/>;
+        if (rangeId === '04-06') return <Pagbubuod4to6/>;
+        return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       default:
         return null;
     }
