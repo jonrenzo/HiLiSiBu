@@ -1,13 +1,24 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Alert, LayoutRectangle } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  LayoutRectangle,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import Svg, { Line } from 'react-native-svg';
 import { chaptersData } from '../data/chaptersData';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { markChapterAsRead} from '../services/db';
-
+import { markChapterAsRead } from '../services/db';
 
 type ChapterDetailRouteProp = RouteProp<RootStackParamList, 'ChapterDetail'>;
 

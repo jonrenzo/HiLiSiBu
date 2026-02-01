@@ -1,11 +1,12 @@
-import React from 'react';
-import { View, Text, TextInput, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
 
 // ==================================================
 // 1. PAGHIHINUHA (Inference) - Character Analysis (Kabanata 1-3)
 // ==================================================
-export const Paghihinuha = () => {
+export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
   // Data derived from the screenshot text
   const characters = [
     {
@@ -52,6 +53,46 @@ export const Paghihinuha = () => {
     },
   ];
 
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const activityId = `paghihinuha-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (id: number, text: string) => {
+    setAnswers((prev) => ({ ...prev, [id]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+
+    for (const char of characters) {
+      const answer = answers[char.id];
+      if (answer) {
+        await saveAnswer(activityId, char.id, answer, false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
+
   return (
     <View className="pb-8">
       {/* Header Section */}
@@ -86,10 +127,18 @@ export const Paghihinuha = () => {
                 className="border-b-2 border-black py-0 font-poppins text-xs text-[#3e2723]"
                 placeholder="Isulat ang sagot..."
                 placeholderTextColor="#bcaaa4"
+                onChangeText={(text) => handleAnswerChange(char.id, text)}
+                value={answers[char.id] || ''}
               />
             </View>
           </View>
         ))}
+        <TouchableOpacity
+          onPress={handleSave}
+          className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+          <FontAwesome5 name="save" size={16} color="white" />
+          <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -98,29 +147,69 @@ export const Paghihinuha = () => {
 // ==================================================
 // 2. PAGSISIYASAT (Investigation) - PLACEHOLDER
 // ==================================================
-export const Pagsisiyasat = () => {
+export const Pagsisiyasat = ({ rangeId }: { rangeId: string }) => {
   const questions = [
     {
       id: 1,
-      text: "Batay sa mga naging pahayag at kilos ng mga panauhin sa piging na idinaos ni Kapitan Tiago. Paano mo mapatutunayan na mayroong hindi pantay na katayuan sa lipunan ang mga tauhang naroon? Magbigay ng mga tiyak na patunay mula sa kabanata upang suportahan ang iyong ideya."
+      text: 'Batay sa mga naging pahayag at kilos ng mga panauhin sa piging na idinaos ni Kapitan Tiago. Paano mo mapatutunayan na mayroong hindi pantay na katayuan sa lipunan ang mga tauhang naroon? Magbigay ng mga tiyak na patunay mula sa kabanata upang suportahan ang iyong ideya.',
     },
     {
       id: 2,
-      text: "Paano inilalarawan sa teksto ang pagtrato kay Ibarra, at ano ang ipinahihiwatig nito tungkol sa umiiral na sistema ng kapangyarihan?"
+      text: 'Paano inilalarawan sa teksto ang pagtrato kay Ibarra, at ano ang ipinahihiwatig nito tungkol sa umiiral na sistema ng kapangyarihan?',
     },
     {
       id: 3,
-      text: "Paano inilalarawan sa nobela ang mga gawi at pamamaraan ng mga prayle, at sa iyong pagsusuri, masasabi mo bang makatarungan ang mga ito? Patunayan ang iyong sagot gamit ang mga sitwasyon at implikasyon ipinakita sa akda."
+      text: 'Paano inilalarawan sa nobela ang mga gawi at pamamaraan ng mga prayle, at sa iyong pagsusuri, masasabi mo bang makatarungan ang mga ito? Patunayan ang iyong sagot gamit ang mga sitwasyon at implikasyon ipinakita sa akda.',
     },
     {
       id: 4,
-      text: "Paano nahahayag ang tunay na pagkatao ni Crisostomo Ibarra sa Kabanata 2 sa pamamagitan ng kanyang pananalita at pakikitungo sa bawat taong kanyang nakasalamuha?"
+      text: 'Paano nahahayag ang tunay na pagkatao ni Crisostomo Ibarra sa Kabanata 2 sa pamamagitan ng kanyang pananalita at pakikitungo sa bawat taong kanyang nakasalamuha?',
     },
     {
       id: 5,
-      text: "Paano masasabing ang handaan sa bahay ni Kapitan Tiago ay isang maliit na salamin ng lipunang Pilipino noong panahon ng Espanyol? Magbigay ng mga patunay mula sa kabanata na nagpapakita ng ugnayan ng kapangyarihan sa pagitan ng pamahalaan at simbahan"
-    }
+      text: 'Paano masasabing ang handaan sa bahay ni Kapitan Tiago ay isang maliit na salamin ng lipunang Pilipino noong panahon ng Espanyol? Magbigay ng mga patunay mula sa kabanata na nagpapakita ng ugnayan ng kapangyarihan sa pagitan ng pamahalaan at simbahan',
+    },
   ];
+
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const activityId = `pagsisiyasat-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (id: number, text: string) => {
+    setAnswers((prev) => ({ ...prev, [id]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+
+    for (const q of questions) {
+      const answer = answers[q.id];
+      if (answer) {
+        await saveAnswer(activityId, q.id, answer, false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
 
   return (
     <View className="pb-8">
@@ -171,11 +260,19 @@ export const Pagsisiyasat = () => {
                 multiline
                 className="min-h-[60px] font-poppins text-xs text-[#3e2723]"
                 textAlignVertical="top"
+                onChangeText={(text) => handleAnswerChange(q.id, text)}
+                value={answers[q.id] || ''}
               />
             </View>
           </View>
         </View>
       ))}
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -183,32 +280,76 @@ export const Pagsisiyasat = () => {
 // ==================================================
 // 3. PAGLILINAW (Clarification) - PLACEHOLDER
 // ==================================================
-export const Paglilinaw = () => {
+export const Paglilinaw = ({ rangeId }: { rangeId: string }) => {
   const characters = [
     {
       id: 1,
       // Ensure you have this image asset
       image: require('../../assets/images/tiago.png'),
-      question: 'Sang-ayon ka ba na si Kapitan Tiago ay maituturing na isang "oportunista" dahil sa kanyang pakikipag-ugnayan sa kapwa makapangyarihang prayle at opisyal ng pamahalaan upang mapanatili ang kanyang sariling interes?'
+      question:
+        'Sang-ayon ka ba na si Kapitan Tiago ay maituturing na isang "oportunista" dahil sa kanyang pakikipag-ugnayan sa kapwa makapangyarihang prayle at opisyal ng pamahalaan upang mapanatili ang kanyang sariling interes?',
     },
     {
       id: 2,
       image: require('../../assets/images/ibarra.png'),
-      question: 'Sa iyong palagay, ang kawalan ba ng marahas na reaksyon ni Ibarra ay tanda ng kanyang pagiging edukado, o maaari itong tingnan bilang isang estratehikong pag-iwas sa gulo?'
+      question:
+        'Sa iyong palagay, ang kawalan ba ng marahas na reaksyon ni Ibarra ay tanda ng kanyang pagiging edukado, o maaari itong tingnan bilang isang estratehikong pag-iwas sa gulo?',
     },
     {
       id: 3,
       // You might need to add a 'sibyla.png' or use a placeholder
       image: require('../../assets/images/hernando.png'), // Using Damaso as placeholder if Sibyla missing
-      question: 'Sang-ayon ka ba kay Padre Sibyla nang palihim niyang pinupuna o sinusuri ang mga kilos ni Ibarra sa halip na harapin ito nang direkta, na nagpapakita ng kanyang pagiging maingat at mapanuri?'
+      question:
+        'Sang-ayon ka ba kay Padre Sibyla nang palihim niyang pinupuna o sinusuri ang mga kilos ni Ibarra sa halip na harapin ito nang direkta, na nagpapakita ng kanyang pagiging maingat at mapanuri?',
     },
     {
       id: 4,
       // You might need to add 'rafael.png'
       image: require('../../assets/images/don.png'), // Using Ibarra as placeholder if Rafael missing
-      question: 'Sa iyong pagsusuri, maaari mo bang ipaliwanag kung paanong ang matibay na prinsipyo at sariling paninindigan ni Don Rafael ang naging pangunahing mitsa ng kanyang tunggalian sa mga makapangyarihan sa San Diego?'
+      question:
+        'Sa iyong pagsusuri, maaari mo bang ipaliwanag kung paanong ang matibay na prinsipyo at sariling paninindigan ni Don Rafael ang naging pangunahing mitsa ng kanyang tunggalian sa mga makapangyarihan sa San Diego?',
     },
   ];
+
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const activityId = `paglilinaw-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (id: number, text: string) => {
+    setAnswers((prev) => ({ ...prev, [id]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+
+    for (const char of characters) {
+      const answer = answers[char.id];
+      if (answer) {
+        await saveAnswer(activityId, char.id, answer, false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
 
   return (
     <View className="pb-8">
@@ -218,25 +359,25 @@ export const Paglilinaw = () => {
         <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paglilinaw</Text>
       </View>
 
-      <Text className="font-poppins-bold text-lg text-black mb-1">Sino sila?</Text>
+      <Text className="mb-1 font-poppins-bold text-lg text-black">Sino sila?</Text>
 
-      <Text className="mb-6 font-poppins text-xs text-justify text-[#5d4037] leading-4">
-        <Text className="font-bold">Panuto:</Text> Tukuyin ang katangiang ipinakikita ng bawat tauhan at bigyang katuwiran ang mga ito.
+      <Text className="mb-6 text-justify font-poppins text-xs leading-4 text-[#5d4037]">
+        <Text className="font-bold">Panuto:</Text> Tukuyin ang katangiang ipinakikita ng bawat
+        tauhan at bigyang katuwiran ang mga ito.
       </Text>
 
       {/* Character Loop */}
       {characters.map((char) => (
         <View key={char.id} className="mb-6 flex-row items-start">
-
           {/* Left: Golden Frame Portrait */}
           <View className="mr-3 shadow-lg">
             {/* Outer Gold Frame */}
-            <View className="h-28 w-24 bg-[#bcaaa4] border-4 border-[#d4af37] rounded-sm p-1 shadow-md justify-center items-center">
+            <View className="h-28 w-24 items-center justify-center rounded-sm border-4 border-[#d4af37] bg-[#bcaaa4] p-1 shadow-md">
               {/* Inner Detail & Image */}
-              <View className="w-full h-full border border-[#8d6e63] bg-[#5d4037]">
+              <View className="h-full w-full border border-[#8d6e63] bg-[#5d4037]">
                 <Image
                   source={char.image}
-                  className="w-full h-full"
+                  className="h-full w-full"
                   resizeMode="cover"
                   defaultSource={{ uri: 'https://via.placeholder.com/100' }}
                 />
@@ -245,28 +386,35 @@ export const Paglilinaw = () => {
           </View>
 
           {/* Right: Question & Answer Box */}
-          <View className="flex-1 bg-white border border-gray-400 rounded-xl p-3 shadow-sm">
-            <Text className="font-poppins text-[10px] text-justify text-black mb-4 leading-4">
+          <View className="flex-1 rounded-xl border border-gray-400 bg-white p-3 shadow-sm">
+            <Text className="mb-4 text-justify font-poppins text-[10px] leading-4 text-black">
               {char.question}
             </Text>
 
             {/* Input Lines */}
             <View className="w-full">
-              <View className="border-b border-gray-400 h-6 w-full" />
-              <View className="border-b border-gray-400 h-6 w-full" />
-              <View className="border-b border-gray-400 h-6 w-full" />
+              <View className="h-6 w-full border-b border-gray-400" />
+              <View className="h-6 w-full border-b border-gray-400" />
+              <View className="h-6 w-full border-b border-gray-400" />
 
               {/* Invisible Input for typing */}
               <TextInput
-                className="absolute top-0 left-0 right-0 bottom-0 text-xs font-poppins text-[#3e2723] pt-2"
+                className="absolute bottom-0 left-0 right-0 top-0 pt-2 font-poppins text-xs text-[#3e2723]"
                 multiline
                 numberOfLines={3}
+                onChangeText={(text) => handleAnswerChange(char.id, text)}
+                value={answers[char.id] || ''}
               />
             </View>
           </View>
-
         </View>
       ))}
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -274,14 +422,57 @@ export const Paglilinaw = () => {
 // ==================================================
 // 4. PAGBUBUOD (Summary) - PLACEHOLDER
 // ==================================================
-export const Pagbubuod = () => {
+export const Pagbubuod = ({ rangeId }: { rangeId: string }) => {
   const rubric = [
-    { label: "Pag-unawa sa Wakas – Naipakita ang malinaw at wastong pag-unawa sa mahahalagang pangyayari sa wakas ng Noli Me Tangere", points: "5 puntos" },
-    { label: "Pagpili ng Mahahalagang Detalye – Natampok lamang ang pinakamahahalagang pangyayari; hindi lumabis sa hinihinging bilang ng pangungusap.", points: "5 puntos" },
-    { label: "Kaayusan ng Pagkakasulat – Malinaw, lohikal, at organisado ang pagkakasunod-sunod ng mga pangungusap.", points: "5 puntos" },
-    { label: "Kalinawan ng Kaisipan – Malinaw at madaling maunawaan ang ipinahahayag na kaisipan.", points: "5 puntos" },
-    { label: "Wastong Gamit ng Wika – Tama ang gramatika, baybay, at bantas.", points: "5 puntos" },
+    {
+      label:
+        'Pag-unawa sa Wakas – Naipakita ang malinaw at wastong pag-unawa sa mahahalagang pangyayari sa wakas ng Noli Me Tangere',
+      points: '5 puntos',
+    },
+    {
+      label:
+        'Pagpili ng Mahahalagang Detalye – Natampok lamang ang pinakamahahalagang pangyayari; hindi lumabis sa hinihinging bilang ng pangungusap.',
+      points: '5 puntos',
+    },
+    {
+      label:
+        'Kaayusan ng Pagkakasulat – Malinaw, lohikal, at organisado ang pagkakasunod-sunod ng mga pangungusap.',
+      points: '5 puntos',
+    },
+    {
+      label: 'Kalinawan ng Kaisipan – Malinaw at madaling maunawaan ang ipinahahayag na kaisipan.',
+      points: '5 puntos',
+    },
+    { label: 'Wastong Gamit ng Wika – Tama ang gramatika, baybay, at bantas.', points: '5 puntos' },
   ];
+
+  const [summary, setSummary] = useState('');
+  const activityId = `pagbubuod-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      if (savedAnswers.length > 0) {
+        setSummary(savedAnswers[0].selected_answer);
+      }
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    const score = summary.trim().length > 0 ? 1 : 0;
+
+    await saveAnswer(activityId, 1, summary, false);
+    await saveScore(user.id, activityId, score);
+
+    Alert.alert('Galing!', 'Ang iyong buod ay nai-save na.');
+  };
 
   return (
     <View className="pb-8">
@@ -292,18 +483,21 @@ export const Pagbubuod = () => {
       </View>
 
       {/* Instruction Box */}
-      <View className="mb-6 rounded-xl border-2 border-[#5d4037] bg-[#ffecb3] p-4 shadow-sm border-b-4">
-        <Text className="font-poppins text-xs text-justify leading-5 text-[#3e2723]">
-          <Text className="font-bold">Panuto:</Text> Sumulat ng isang maikling buod tungkol sa kabanata isa (1) hanggang tatlo (3) mula sa nobelang Noli Me Tangere. Tiyakin na ang iyong buod ay malinaw, organisado, at binubuo lamang ng hindi hihigit sa sampung (10) pangungusap.
+      <View className="mb-6 rounded-xl border-2 border-b-4 border-[#5d4037] bg-[#ffecb3] p-4 shadow-sm">
+        <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
+          <Text className="font-bold">Panuto:</Text> Sumulat ng isang maikling buod tungkol sa
+          kabanata isa (1) hanggang tatlo (3) mula sa nobelang Noli Me Tangere. Tiyakin na ang iyong
+          buod ay malinaw, organisado, at binubuo lamang ng hindi hihigit sa sampung (10)
+          pangungusap.
         </Text>
       </View>
 
       {/* Writing Area (Lined Paper) */}
-      <View className="mb-6 overflow-hidden rounded-3xl border-4 border-[#e8d4b0] bg-white shadow-md relative min-h-[300px]">
+      <View className="relative mb-6 min-h-[300px] overflow-hidden rounded-3xl border-4 border-[#e8d4b0] bg-white shadow-md">
         {/* Lined Background */}
-        <View className="absolute top-0 left-0 right-0 bottom-0 pt-10 px-6">
-          {[1,2,3,4,5,6,7].map((i) => (
-            <View key={i} className="h-10 border-b-2 border-black w-full" />
+        <View className="absolute bottom-0 left-0 right-0 top-0 px-6 pt-10">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <View key={i} className="h-10 w-full border-b-2 border-black" />
           ))}
         </View>
 
@@ -311,9 +505,11 @@ export const Pagbubuod = () => {
         <TextInput
           multiline
           placeholder="Simulan ang iyong buod dito..."
-          className="flex-1 pt-10 px-6 text-base font-poppins text-[#3e2723] leading-[40px]"
+          className="flex-1 px-6 pt-10 font-poppins text-base leading-[40px] text-[#3e2723]"
           textAlignVertical="top"
           style={{ lineHeight: 80 }}
+          onChangeText={setSummary}
+          value={summary}
         />
       </View>
 
@@ -321,10 +517,10 @@ export const Pagbubuod = () => {
       <View className="border-2 border-[#3e2723] bg-[#f5f5f5]">
         {/* Table Header */}
         <View className="flex-row border-b border-[#3e2723] bg-[#d7ccc8]">
-          <View className="flex-1 border-r border-[#3e2723] p-2 items-center justify-center">
+          <View className="flex-1 items-center justify-center border-r border-[#3e2723] p-2">
             <Text className="font-poppins-bold text-[10px] text-[#3e2723]">Pamantayan</Text>
           </View>
-          <View className="w-16 p-2 items-center justify-center">
+          <View className="w-16 items-center justify-center p-2">
             <Text className="font-poppins-bold text-[10px] text-[#3e2723]">Puntos</Text>
           </View>
         </View>
@@ -332,10 +528,12 @@ export const Pagbubuod = () => {
         {/* Table Rows */}
         {rubric.map((row, index) => (
           <View key={index} className="flex-row border-b border-[#3e2723] bg-white">
-            <View className="flex-1 border-r border-[#3e2723] p-2 justify-center">
-              <Text className="font-poppins text-xs text-justify text-[#3e2723] leading-3">{row.label}</Text>
+            <View className="flex-1 justify-center border-r border-[#3e2723] p-2">
+              <Text className="text-justify font-poppins text-xs leading-3 text-[#3e2723]">
+                {row.label}
+              </Text>
             </View>
-            <View className="w-16 p-2 items-center justify-center bg-[#efede6]">
+            <View className="w-16 items-center justify-center bg-[#efede6] p-2">
               <Text className="font-poppins-bold text-xs text-[#3e2723]">{row.points}</Text>
             </View>
           </View>
@@ -343,92 +541,147 @@ export const Pagbubuod = () => {
 
         {/* Total Row */}
         <View className="flex-row bg-[#d7ccc8]">
-          <View className="flex-1 border-r border-[#3e2723] p-2 items-center justify-center">
+          <View className="flex-1 items-center justify-center border-r border-[#3e2723] p-2">
             <Text className="font-poppins-bold text-[10px] text-[#3e2723]">Kabuuang Puntos</Text>
           </View>
-          <View className="w-16 p-2 items-center justify-center">
+          <View className="w-16 items-center justify-center p-2">
             <Text className="font-poppins-bold text-[10px] text-[#3e2723]">25 puntos</Text>
           </View>
         </View>
       </View>
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang Buod</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-
 // ==================================================
 // PAGHIHINUHA (Kabanata 4-6) - Situation Analysis
 // ==================================================
-export const Paghihinuha4to6 = () => {
+export const Paghihinuha4to6 = ({ rangeId }: { rangeId: string }) => {
   const cards = [
     {
       id: 1,
-      color: "bg-[#eefeeb]", // Light Green
-      borderColor: "border-[#c8e6c9]",
-      title: "Sitwasyon:",
-      text: "Naglakad si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis..."
+      color: 'bg-[#eefeeb]', // Light Green
+      borderColor: 'border-[#c8e6c9]',
+      title: 'Sitwasyon:',
+      text: 'Naglakad si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis...',
     },
     {
       id: 2,
-      color: "bg-[#fff8e1]", // Light Yellow
-      borderColor: "border-[#ffecb3]",
-      title: "Sitwasyon:",
-      text: "Pagdating ni Ibarra sa Fonda de Lala, naupo siya sa silid at pinagmamasdan mula sa bintana ang maliwanag na bahay sa kabila ng ilog. Narinig niya ang kalansing ng kubyertos at tugtugin ng orkestra..."
+      color: 'bg-[#fff8e1]', // Light Yellow
+      borderColor: 'border-[#ffecb3]',
+      title: 'Sitwasyon:',
+      text: 'Pagdating ni Ibarra sa Fonda de Lala, naupo siya sa silid at pinagmamasdan mula sa bintana ang maliwanag na bahay sa kabila ng ilog. Narinig niya ang kalansing ng kubyertos at tugtugin ng orkestra...',
     },
     {
       id: 3,
-      color: "bg-[#e0f7fa]", // Light Blue
-      borderColor: "border-[#b2ebf2]",
-      title: "Sitwasyon:",
-      text: "Ipinakita ang kayamanan, impluwensya, at pamumuhay ni Kapitan Tiyago: pandak, may bilugang mukha, maimpluwensyang tao, kaibigan ng gobyerno at prayle, at turing sa sarili bilang tunay na Espanyol..."
-    }
+      color: 'bg-[#e0f7fa]', // Light Blue
+      borderColor: 'border-[#b2ebf2]',
+      title: 'Sitwasyon:',
+      text: 'Ipinakita ang kayamanan, impluwensya, at pamumuhay ni Kapitan Tiyago: pandak, may bilugang mukha, maimpluwensyang tao, kaibigan ng gobyerno at prayle, at turing sa sarili bilang tunay na Espanyol...',
+    },
   ];
+
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const activityId = `paghihinuha-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (id: number, text: string) => {
+    setAnswers((prev) => ({ ...prev, [id]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+
+    for (const card of cards) {
+      const answer = answers[card.id];
+      if (answer) {
+        await saveAnswer(activityId, card.id, answer, false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
 
   return (
     <View className="pb-8">
       {/* Header */}
       <View className="mb-4 flex-row items-center">
         <FontAwesome5 name="search" size={20} color="#3e2723" />
-        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paghihinuha (Kabanata 4-6)</Text>
+        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">
+          Paghihinuha (Kabanata 4-6)
+        </Text>
       </View>
 
-      <Text className="mb-6 font-poppins text-xs text-justify text-[#5d4037] leading-5">
-        <Text className="font-bold">Panuto:</Text> Basahin at unawain ang bawat sitwasyon. Batay sa mga pahiwatig sa teksto, ilahad ang posibleng susunod na pangyayari, damdamin, o aksyon ng tauhan at ipaliwanag ang iyong lohikal na paghihinuha.
+      <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-[#5d4037]">
+        <Text className="font-bold">Panuto:</Text> Basahin at unawain ang bawat sitwasyon. Batay sa
+        mga pahiwatig sa teksto, ilahad ang posibleng susunod na pangyayari, damdamin, o aksyon ng
+        tauhan at ipaliwanag ang iyong lohikal na paghihinuha.
       </Text>
 
       {/* Cards Loop */}
       {cards.map((card) => (
         <View key={card.id} className="mb-6 flex-row">
-
           {/* Left: Situation Box */}
-          <View className={`w-32 p-4 rounded-xl ${card.color} border ${card.borderColor} justify-center mr-3 shadow-sm`}>
-            <Text className="font-poppins-bold text-xs text-center text-[#3e2723] mb-2">
+          <View
+            className={`w-32 rounded-xl p-4 ${card.color} border ${card.borderColor} mr-3 justify-center shadow-sm`}>
+            <Text className="mb-2 text-center font-poppins-bold text-xs text-[#3e2723]">
               {card.title}
             </Text>
-            <Text className="font-serif italic text-[10px] text-center text-[#5d4037] leading-4">
+            <Text className="text-center font-serif text-[10px] italic leading-4 text-[#5d4037]">
               {card.text}
             </Text>
           </View>
 
           {/* Right: Answer Lines */}
-          <View className="flex-1 justify-between py-1 bg-[#efede6] rounded-xl border border-[#d7ccc8] p-3 shadow-inner">
+          <View className="shadow-inner flex-1 justify-between rounded-xl border border-[#d7ccc8] bg-[#efede6] p-3 py-1">
             {[1, 2, 3, 4, 5].map((line) => (
-              <View key={line} className="border-b border-[#bcaaa4] w-full h-6 mb-1" />
+              <View key={line} className="mb-1 h-6 w-full border-b border-[#bcaaa4]" />
             ))}
             {/* Invisible Text Input overlaying the lines for typing */}
             <TextInput
-              className="absolute top-0 left-0 right-0 bottom-0 p-3 text-xs font-poppins text-[#3e2723] leading-7"
+              className="absolute bottom-0 left-0 right-0 top-0 p-3 font-poppins text-xs leading-7 text-[#3e2723]"
               multiline
               textAlignVertical="top"
+              onChangeText={(text) => handleAnswerChange(card.id, text)}
+              value={answers[card.id] || ''}
             />
           </View>
-
         </View>
       ))}
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+      </TouchableOpacity>
     </View>
   );
 };
-
 
 // ==================================================
 // PAGLILINAW (Kabanata 4-6) - FIXED DICE & INPUT
@@ -468,97 +721,197 @@ const DiceFace = ({ value }: { value: number }) => {
 
   const renderDots = () => {
     switch (value) {
-      case 1: return <Dot pos="center" />;
-      case 2: return <><Dot pos="top-left" /><Dot pos="bottom-right" /></>;
-      case 3: return <><Dot pos="top-left" /><Dot pos="center" /><Dot pos="bottom-right" /></>;
-      case 4: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
-      case 5: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="center" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
-      case 6: return <><Dot pos="top-left" /><Dot pos="top-right" /><Dot pos="midY-left" /><Dot pos="midY-right" /><Dot pos="bottom-left" /><Dot pos="bottom-right" /></>;
-      default: return null;
+      case 1:
+        return <Dot pos="center" />;
+      case 2:
+        return (
+          <>
+            <Dot pos="top-left" />
+            <Dot pos="bottom-right" />
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <Dot pos="top-left" />
+            <Dot pos="center" />
+            <Dot pos="bottom-right" />
+          </>
+        );
+      case 4:
+        return (
+          <>
+            <Dot pos="top-left" />
+            <Dot pos="top-right" />
+            <Dot pos="bottom-left" />
+            <Dot pos="bottom-right" />
+          </>
+        );
+      case 5:
+        return (
+          <>
+            <Dot pos="top-left" />
+            <Dot pos="top-right" />
+            <Dot pos="center" />
+            <Dot pos="bottom-left" />
+            <Dot pos="bottom-right" />
+          </>
+        );
+      case 6:
+        return (
+          <>
+            <Dot pos="top-left" />
+            <Dot pos="top-right" />
+            <Dot pos="midY-left" />
+            <Dot pos="midY-right" />
+            <Dot pos="bottom-left" />
+            <Dot pos="bottom-right" />
+          </>
+        );
+      default:
+        return null;
     }
   };
 
   return (
-      <View style={{ width: size, height: size, backgroundColor: 'white', borderWidth: 2, borderColor: '#3e2723', borderRadius: 12, position: 'relative' }}>
-        {renderDots()}
-      </View>
+    <View
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: '#3e2723',
+        borderRadius: 12,
+        position: 'relative',
+      }}>
+      {renderDots()}
+    </View>
   );
 };
-export const Paglilinaw4to6 = () => {
+export const Paglilinaw4to6 = ({ rangeId }: { rangeId: string }) => {
   const data = [
     {
       id: 1,
-      text: "Ano ang ibig sabihin ni Tenyente Guevarra nang sabihin niyang 'mag-ingat' si Ibarra? Ipaliwanag ang kontekstong historikal at personal na dahilan kung bakit mahalaga ang babalang ito."
+      text: "Ano ang ibig sabihin ni Tenyente Guevarra nang sabihin niyang 'mag-ingat' si Ibarra? Ipaliwanag ang kontekstong historikal at personal na dahilan kung bakit mahalaga ang babalang ito.",
     },
     {
       id: 2,
-      text: "Paano naging simbolo ng kawalang-katarungan ang sinapit ni Don Rafael? Ipaliwanag batay sa pangyayari sa artilyero at sa mga paratang laban sa kanya."
+      text: 'Paano naging simbolo ng kawalang-katarungan ang sinapit ni Don Rafael? Ipaliwanag batay sa pangyayari sa artilyero at sa mga paratang laban sa kanya.',
     },
     {
       id: 3,
-      text: "Sa Kabanata V, bakit inihambing ang liwanag mula sa bahay ni Maria Clara sa isang 'tala sa gabing madilim'? Ano ang ipinapakitang emosyon at simbolo nito sa nararamdaman ni Ibarra?"
+      text: "Sa Kabanata V, bakit inihambing ang liwanag mula sa bahay ni Maria Clara sa isang 'tala sa gabing madilim'? Ano ang ipinapakitang emosyon at simbolo nito sa nararamdaman ni Ibarra?",
     },
     {
       id: 4,
-      text: "Ano ang ipinapakitang katangian ni Padre Sibyla at ng batang Pransiskano sa eksena sa bahay ni Kapitan Tiyago? Ipaliwanag kung paano nagkakaiba ang kanilang kilos at inuusal batay sa inilalahad ng teksto."
+      text: 'Ano ang ipinapakitang katangian ni Padre Sibyla at ng batang Pransiskano sa eksena sa bahay ni Kapitan Tiyago? Ipaliwanag kung paano nagkakaiba ang kanilang kilos at inuusal batay sa inilalahad ng teksto.',
     },
     {
       id: 5,
-      text: "Bakit sinasabing may 'kapangyarihan' ang pag-ibig sa pamilya at kabanata sa karakter nina Ibarra at Maria Clara sa Kabanata V-VI? Ipaliwanag kung paano ito nagdudulot ng pag-asa o pighati sa mga tauhan."
+      text: "Bakit sinasabing may 'kapangyarihan' ang pag-ibig sa pamilya at kabanata sa karakter nina Ibarra at Maria Clara sa Kabanata V-VI? Ipaliwanag kung paano ito nagdudulot ng pag-asa o pighati sa mga tauhan.",
     },
     {
       id: 6,
-      text: "Ano ang ipinahihiwatig ng pagiging 'tunay na Espanyol' ni Kapitan Tiyago ayon sa kanyang asal at paniniwala? Linawin kung paano ito nagpapakita ng kalagayan ng lipunang Pilipino noong panahon ng kolonyalismo."
-    }
+      text: "Ano ang ipinahihiwatig ng pagiging 'tunay na Espanyol' ni Kapitan Tiyago ayon sa kanyang asal at paniniwala? Linawin kung paano ito nagpapakita ng kalagayan ng lipunang Pilipino noong panahon ng kolonyalismo.",
+    },
   ];
 
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const activityId = `paglilinaw-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (id: number, text: string) => {
+    setAnswers((prev) => ({ ...prev, [id]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+
+    for (const item of data) {
+      const answer = answers[item.id];
+      if (answer) {
+        await saveAnswer(activityId, item.id, answer, false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
+
   return (
-      <View className="pb-8">
-        {/* Header */}
-        <View className="mb-4 flex-row items-center">
-          <MaterialCommunityIcons name="dice-5" size={24} color="#3e2723" />
-          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paglilinaw</Text>
-        </View>
-
-        {/* Instructions */}
-        <Text className="mb-6 font-poppins text-xs text-justify text-[#5d4037] leading-5">
-          <Text className="font-bold">Panuto:</Text> Pindutin ang dice at sagutin ang katanungang katapat ng numerong lumabas. Batay sa kabanatang nabasa, ipaliwanag ang kahulugan, simbolo, at damdaming ipinapahayag ng bawat tanong.
-        </Text>
-
-        {/* Questions List */}
-        <View>
-          {data.map((item) => (
-              <View key={item.id} className="flex-row items-start mb-8">
-
-                {/* Left: Fixed Dice */}
-                <View className="mr-4 pt-1">
-                  <DiceFace value={item.id} />
-                </View>
-
-                {/* Right: Question & Answer Stack */}
-                <View className="flex-1">
-                  {/* Question Bubble */}
-                  <View className="bg-white border-2 border-[#3e2723] rounded-2xl p-3 shadow-sm mb-3">
-                    <Text className="font-poppins text-[10px] text-justify text-[#3e2723] leading-4">
-                      {item.text}
-                    </Text>
-                  </View>
-
-                  {/* Answer Input Bubble */}
-                  <View className="bg-[#efede6] border-2 border-[#3e2723] rounded-xl p-2 shadow-inner">
-                    <TextInput
-                        placeholder="Isulat ang iyong sagot dito..."
-                        placeholderTextColor="#a1887f"
-                        multiline
-                        className="text-xs font-poppins text-[#3e2723] min-h-[50px]"
-                        textAlignVertical="top"
-                    />
-                  </View>
-                </View>
-              </View>
-          ))}
-        </View>
+    <View className="pb-8">
+      {/* Header */}
+      <View className="mb-4 flex-row items-center">
+        <MaterialCommunityIcons name="dice-5" size={24} color="#3e2723" />
+        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paglilinaw</Text>
       </View>
+
+      {/* Instructions */}
+      <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-[#5d4037]">
+        <Text className="font-bold">Panuto:</Text> Pindutin ang dice at sagutin ang katanungang
+        katapat ng numerong lumabas. Batay sa kabanatang nabasa, ipaliwanag ang kahulugan, simbolo,
+        at damdaming ipinapahayag ng bawat tanong.
+      </Text>
+
+      {/* Questions List */}
+      <View>
+        {data.map((item) => (
+          <View key={item.id} className="mb-8 flex-row items-start">
+            {/* Left: Fixed Dice */}
+            <View className="mr-4 pt-1">
+              <DiceFace value={item.id} />
+            </View>
+
+            {/* Right: Question & Answer Stack */}
+            <View className="flex-1">
+              {/* Question Bubble */}
+              <View className="mb-3 rounded-2xl border-2 border-[#3e2723] bg-white p-3 shadow-sm">
+                <Text className="text-justify font-poppins text-[10px] leading-4 text-[#3e2723]">
+                  {item.text}
+                </Text>
+              </View>
+
+              {/* Answer Input Bubble */}
+              <View className="shadow-inner rounded-xl border-2 border-[#3e2723] bg-[#efede6] p-2">
+                <TextInput
+                  placeholder="Isulat ang iyong sagot dito..."
+                  placeholderTextColor="#a1887f"
+                  multiline
+                  className="min-h-[50px] font-poppins text-xs text-[#3e2723]"
+                  textAlignVertical="top"
+                  onChangeText={(text) => handleAnswerChange(item.id, text)}
+                  value={answers[item.id] || ''}
+                />
+              </View>
+            </View>
+          </View>
+        ))}
+      </View>
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -566,205 +919,342 @@ export const Paglilinaw4to6 = () => {
 // PAGSISIYASAT (Kabanata 4-6) - CASES 1, 2 & 3
 // Matches all G2 FINAL NAA images
 // ==================================================
-export const Pagsisiyasat4to6 = () => {
+export const Pagsisiyasat4to6 = ({ rangeId }: { rangeId: string }) => {
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const activityId = `pagsisiyasat-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+      setAnswers(answersMap);
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleAnswerChange = (key: string, text: string) => {
+    setAnswers((prev) => ({ ...prev, [key]: text }));
+  };
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    let score = 0;
+    let questionIndex = 1;
+
+    for (const key in answers) {
+      if (answers[key]) {
+        await saveAnswer(activityId, questionIndex++, answers[key], false);
+        score++;
+      }
+    }
+
+    await saveScore(user.id, activityId, score);
+    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+  };
+
   return (
-      <View className="pb-8">
-        {/* Main Header */}
-        <View className="mb-6 flex-row items-center">
-          <FontAwesome5 name="eye" size={24} color="#3e2723" />
-          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagsisiyasat</Text>
-        </View>
+    <View className="pb-8">
+      {/* Main Header */}
+      <View className="mb-6 flex-row items-center">
+        <FontAwesome5 name="eye" size={24} color="#3e2723" />
+        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagsisiyasat</Text>
+      </View>
 
-        {/* ==================== CASE 1 SECTION ==================== */}
-        <View className="mb-8">
-          <Text className="font-serif text-lg font-bold text-black mb-2">Case 1: Sino ang Suspek?</Text>
+      {/* ==================== CASE 1 SECTION ==================== */}
+      <View className="mb-8">
+        <Text className="mb-2 font-serif text-lg font-bold text-black">
+          Case 1: Sino ang Suspek?
+        </Text>
 
-          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
-            <Text className="font-bold">Panuto:</Text> Batay sa nabasang akda, Isulat ang pangalan ng tatlong (3) tauhan na posibleng suspek o may motibo sa pagkakakulong sa ama ni Crisostomo Ibarra. Isulat ito sa bawat nakalaang kahon.
-          </Text>
+        <Text className="mb-4 text-justify font-poppins text-xs leading-4 text-[#5d4037]">
+          <Text className="font-bold">Panuto:</Text> Batay sa nabasang akda, Isulat ang pangalan ng
+          tatlong (3) tauhan na posibleng suspek o may motibo sa pagkakakulong sa ama ni Crisostomo
+          Ibarra. Isulat ito sa bawat nakalaang kahon.
+        </Text>
 
-          {/* Suspects Row */}
-          <View className="flex-row justify-between px-2">
-            {[1, 2, 3].map((i) => (
-                <View key={i} className="w-[30%] items-center">
-                  {/* Silhouette Frame */}
-                  <View className="w-full aspect-square bg-white border-2 border-black rounded-lg mb-2 items-center justify-end overflow-hidden relative">
-                    <FontAwesome5 name="user-alt" size={55} color="black" style={{ marginBottom: -8 }} />
-                    <Text className="absolute top-1 text-white font-serif font-bold text-4xl shadow-sm">?</Text>
-                  </View>
-
-                  {/* Yellow Input Box */}
-                  <TextInput
-                      className="w-full h-8 bg-[#fdd835] border border-[#fbc02d] rounded-md text-center text-[10px] font-poppins-bold text-black p-0"
-                  />
-                </View>
-            ))}
-          </View>
-        </View>
-
-        {/* ==================== CASE 2 SECTION ==================== */}
-        <View className="mb-8">
-          <View className="flex-row items-center mb-2">
-            <FontAwesome5 name="user-secret" size={20} color="#2e7d32" />
-            <Text className="font-serif text-lg font-bold text-black ml-2">Case 2: Ano ang ebidensya?</Text>
-          </View>
-
-          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
-            <Text className="font-bold">Panuto:</Text> Mula sa mga suspek na iyong inilagay sa Case 1, ilahad mo ang motibo kung bakit sila ang iyong pinaghihinalaang nagpakulong sa ama ni Crisostomo Ibarra.
-          </Text>
-
-          {/* STRICT TABLE LAYOUT */}
-          <View className="border-2 border-black bg-white mt-2">
-            {/* Table Header */}
-            <View className="flex-row border-b-2 border-black h-12 bg-white">
-              <View className="flex-1 border-r-2 border-black items-center justify-center">
-                <Text className="font-serif font-bold text-sm text-black">Motibo</Text>
-              </View>
-              <View className="flex-1 items-center justify-center">
-                <Text className="font-serif font-bold text-sm text-black">Paliwanag</Text>
-              </View>
-            </View>
-
-            {/* Table Rows */}
-            {[1, 2, 3].map((row, index) => (
-                <View key={row} className={`flex-row h-16 ${index !== 2 ? 'border-b border-black' : ''}`}>
-                  <View className="flex-1 border-r-2 border-black justify-center px-4 bg-white">
-                    <TextInput className="w-full h-10 border-b-2 border-black text-xs font-poppins text-black" placeholder="" />
-                  </View>
-                  <View className="flex-1 justify-center px-4 bg-white">
-                    <TextInput className="w-full h-10 border-b-2 border-black text-xs font-poppins text-black" placeholder="" />
-                  </View>
-                </View>
-            ))}
-          </View>
-        </View>
-
-        {/* ==================== CASE 3 SECTION (NEW) ==================== */}
-        <View>
-          <View className="flex-row items-center mb-2">
-            {/* Silhouette Icon Header */}
-            <View className="relative mr-2">
-              <FontAwesome5 name="user-alt" size={24} color="black" />
-              <Text className="absolute top-0 right-1 text-white font-bold text-[10px]">?</Text>
-            </View>
-            <Text className="font-serif text-lg font-bold text-black">Case 3 : Sino ang tunay na salarin?</Text>
-          </View>
-
-          <Text className="font-poppins text-xs text-justify text-[#5d4037] mb-4 leading-4">
-            <Text className="font-bold">Panuto:</Text> Sagutin ang tanong sa ibaba. Ipaliwanag at ilahad batay sa iyong pagkakaunawa sa nobela.
-          </Text>
-
-          {/* Large Question Box */}
-          <View className="border-2 border-black bg-white p-5">
-            <Text className="font-serif font-bold text-xs text-black text-justify mb-4 leading-5">
-              Batay sa iyong pagsusuri sa nobela, sino ang tunay na salarin sa pagkakakulong ng ama ni Crisostomo Ibarra, at paano niya naisakatuparan ang kaniyang masamang layunin?
-            </Text>
-
-            {/* Lined Writing Area */}
-            <View className="relative h-64 mt-2">
-              {/* Background Lines */}
-              <View className="absolute top-0 left-0 right-0 bottom-0 justify-between py-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((line) => (
-                    <View key={line} className="w-full border-b border-black h-6" />
-                ))}
+        {/* Suspects Row */}
+        <View className="flex-row justify-between px-2">
+          {[1, 2, 3].map((i) => (
+            <View key={i} className="w-[30%] items-center">
+              {/* Silhouette Frame */}
+              <View className="relative mb-2 aspect-square w-full items-center justify-end overflow-hidden rounded-lg border-2 border-black bg-white">
+                <FontAwesome5
+                  name="user-alt"
+                  size={55}
+                  color="black"
+                  style={{ marginBottom: -8 }}
+                />
+                <Text className="absolute top-1 font-serif text-4xl font-bold text-white shadow-sm">
+                  ?
+                </Text>
               </View>
 
-              {/* Input Overlay */}
+              {/* Yellow Input Box */}
               <TextInput
-                  className="flex-1 text-xs font-poppins text-black leading-7 p-0 pt-1"
-                  multiline
-                  textAlignVertical="top"
-                  style={{ lineHeight: 28 }} // Adjust line height to match border spacing
+                className="h-8 w-full rounded-md border border-[#fbc02d] bg-[#fdd835] p-0 text-center font-poppins-bold text-[10px] text-black"
+                onChangeText={(text) => handleAnswerChange(`case1_suspect${i}`, text)}
+                value={answers[`case1_suspect${i}`] || ''}
               />
             </View>
-          </View>
+          ))}
+        </View>
+      </View>
+
+      {/* ==================== CASE 2 SECTION ==================== */}
+      <View className="mb-8">
+        <View className="mb-2 flex-row items-center">
+          <FontAwesome5 name="user-secret" size={20} color="#2e7d32" />
+          <Text className="ml-2 font-serif text-lg font-bold text-black">
+            Case 2: Ano ang ebidensya?
+          </Text>
         </View>
 
+        <Text className="mb-4 text-justify font-poppins text-xs leading-4 text-[#5d4037]">
+          <Text className="font-bold">Panuto:</Text> Mula sa mga suspek na iyong inilagay sa Case 1,
+          ilahad mo ang motibo kung bakit sila ang iyong pinaghihinalaang nagpakulong sa ama ni
+          Crisostomo Ibarra.
+        </Text>
+
+        {/* STRICT TABLE LAYOUT */}
+        <View className="mt-2 border-2 border-black bg-white">
+          {/* Table Header */}
+          <View className="h-12 flex-row border-b-2 border-black bg-white">
+            <View className="flex-1 items-center justify-center border-r-2 border-black">
+              <Text className="font-serif text-sm font-bold text-black">Motibo</Text>
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <Text className="font-serif text-sm font-bold text-black">Paliwanag</Text>
+            </View>
+          </View>
+
+          {/* Table Rows */}
+          {[1, 2, 3].map((row, index) => (
+            <View
+              key={row}
+              className={`h-16 flex-row ${index !== 2 ? 'border-b border-black' : ''}`}>
+              <View className="flex-1 justify-center border-r-2 border-black bg-white px-4">
+                <TextInput
+                  className="h-10 w-full border-b-2 border-black font-poppins text-xs text-black"
+                  placeholder=""
+                  onChangeText={(text) => handleAnswerChange(`case2_motibo${row}`, text)}
+                  value={answers[`case2_motibo${row}`] || ''}
+                />
+              </View>
+              <View className="flex-1 justify-center bg-white px-4">
+                <TextInput
+                  className="h-10 w-full border-b-2 border-black font-poppins text-xs text-black"
+                  placeholder=""
+                  onChangeText={(text) => handleAnswerChange(`case2_paliwanag${row}`, text)}
+                  value={answers[`case2_paliwanag${row}`] || ''}
+                />
+              </View>
+            </View>
+          ))}
+        </View>
       </View>
+
+      {/* ==================== CASE 3 SECTION (NEW) ==================== */}
+      <View>
+        <View className="mb-2 flex-row items-center">
+          {/* Silhouette Icon Header */}
+          <View className="relative mr-2">
+            <FontAwesome5 name="user-alt" size={24} color="black" />
+            <Text className="absolute right-1 top-0 text-[10px] font-bold text-white">?</Text>
+          </View>
+          <Text className="font-serif text-lg font-bold text-black">
+            Case 3 : Sino ang tunay na salarin?
+          </Text>
+        </View>
+
+        <Text className="mb-4 text-justify font-poppins text-xs leading-4 text-[#5d4037]">
+          <Text className="font-bold">Panuto:</Text> Sagutin ang tanong sa ibaba. Ipaliwanag at
+          ilahad batay sa iyong pagkakaunawa sa nobela.
+        </Text>
+
+        {/* Large Question Box */}
+        <View className="border-2 border-black bg-white p-5">
+          <Text className="mb-4 text-justify font-serif text-xs font-bold leading-5 text-black">
+            Batay sa iyong pagsusuri sa nobela, sino ang tunay na salarin sa pagkakakulong ng ama ni
+            Crisostomo Ibarra, at paano niya naisakatuparan ang kaniyang masamang layunin?
+          </Text>
+
+          {/* Lined Writing Area */}
+          <View className="relative mt-2 h-64">
+            {/* Background Lines */}
+            <View className="absolute bottom-0 left-0 right-0 top-0 justify-between py-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((line) => (
+                <View key={line} className="h-6 w-full border-b border-black" />
+              ))}
+            </View>
+
+            {/* Input Overlay */}
+            <TextInput
+              className="flex-1 p-0 pt-1 font-poppins text-xs leading-7 text-black"
+              multiline
+              textAlignVertical="top"
+              style={{ lineHeight: 28 }} // Adjust line height to match border spacing
+              onChangeText={(text) => handleAnswerChange('case3_answer', text)}
+              value={answers['case3_answer'] || ''}
+            />
+          </View>
+        </View>
+      </View>
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
-
 
 // ==================================================
 // PAGBUBUOD (Kabanata 4-6) - Emoji Summary
 // Fixed: Emojis are now a placeholder inside the input
 // ==================================================
-export const Pagbubuod4to6 = () => {
+export const Pagbubuod4to6 = ({ rangeId }: { rangeId: string }) => {
   const rubric = [
-    { label: "Pagkilala sa Pangunahing Ideya – Malinaw na naipakita ang pangunahing mensahe ng kabanata batay sa ibinigay na emoji; hindi nalilihis sa sentral na tema.", points: "5 puntos" },
-    { label: "Pagluhanay ng Mahahalagang Pangyayari – Kumpleto at lohikal ang pagkakasunod-sunod ng mahahalagang pangyayari; walang labis na detalye.", points: "5 puntos" },
-    { label: "Pagiging Komprehensibo at Maikli – Napanatili ang kabuuang saysay ng kabanata sa pinaikling paraan; hindi sumobra sa detalye at hindi nagkulang sa personal na opinyon.", points: "5 puntos" },
-    { label: "Kaayusan at Kalinawan ng Paglalahad – Malinaw, organisado, at madaling basahin ang buod; may maayos na daloy ng ideya.", points: "5 puntos" },
-    { label: "Gamit ng Wika – Wastong baybay, bantas, at gramatika; malinaw ang mga pangungusap.", points: "5 puntos" },
+    {
+      label:
+        'Pagkilala sa Pangunahing Ideya – Malinaw na naipakita ang pangunahing mensahe ng kabanata batay sa ibinigay na emoji; hindi nalilihis sa sentral na tema.',
+      points: '5 puntos',
+    },
+    {
+      label:
+        'Pagluhanay ng Mahahalagang Pangyayari – Kumpleto at lohikal ang pagkakasunod-sunod ng mahahalagang pangyayari; walang labis na detalye.',
+      points: '5 puntos',
+    },
+    {
+      label:
+        'Pagiging Komprehensibo at Maikli – Napanatili ang kabuuang saysay ng kabanata sa pinaikling paraan; hindi sumobra sa detalye at hindi nagkulang sa personal na opinyon.',
+      points: '5 puntos',
+    },
+    {
+      label:
+        'Kaayusan at Kalinawan ng Paglalahad – Malinaw, organisado, at madaling basahin ang buod; may maayos na daloy ng ideya.',
+      points: '5 puntos',
+    },
+    {
+      label: 'Gamit ng Wika – Wastong baybay, bantas, at gramatika; malinaw ang mga pangungusap.',
+      points: '5 puntos',
+    },
   ];
 
+  const [summary, setSummary] = useState('');
+  const activityId = `pagbubuod-${rangeId}`;
+
+  useEffect(() => {
+    const loadAnswers = async () => {
+      const savedAnswers = await getAnswers(activityId);
+      if (savedAnswers.length > 0) {
+        setSummary(savedAnswers[0].selected_answer);
+      }
+    };
+    loadAnswers();
+  }, [activityId]);
+
+  const handleSave = async () => {
+    const user = await getUser();
+    if (!user) {
+      Alert.alert('Error', 'Hindi mahanap ang user.');
+      return;
+    }
+
+    const score = summary.trim().length > 0 ? 1 : 0;
+
+    await saveAnswer(activityId, 1, summary, false);
+    await saveScore(user.id, activityId, score);
+
+    Alert.alert('Galing!', 'Ang iyong buod ay nai-save na.');
+  };
+
   return (
-      <View className="pb-8">
-        {/* Header */}
-        <View className="mb-4 flex-row items-center">
-          <FontAwesome5 name="edit" size={24} color="#3e2723" />
-          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagbubuod</Text>
+    <View className="pb-8">
+      {/* Header */}
+      <View className="mb-4 flex-row items-center">
+        <FontAwesome5 name="edit" size={24} color="#3e2723" />
+        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagbubuod</Text>
+      </View>
+
+      {/* Instruction Box */}
+      <Text className="mb-4 text-justify font-poppins text-xs leading-5 text-[#5d4037]">
+        <Text className="font-bold">Panuto:</Text> Basahing mabuti ang itinakdang kabanata mula sa
+        Nobelang Noli Me Tangere. Gamit ang mga emoji, sumulat ng isang maikling buod na binubuo ng
+        apat (4) hanggang anim (6) na pangungusap.
+        {'\n\n'}
+        Tiyaking malinaw na nakasaad ang pangunahing ideya, mahahalagang pangyayari, at tamang
+        pagkakasunod-sunod ng mga ito. Iwasan ang paglalagay ng labis na detalye, sariling opinyon,
+        o komentaryo; ibatay lamang ang sagot sa mismong nilalaman ng kabanata.
+      </Text>
+
+      {/* Writing Area (Lined Paper) */}
+      <View className="relative mb-6 min-h-[350px] overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm">
+        {/* TextInput Overlay with Emoji Placeholder */}
+        <TextInput
+          multiline
+          // The emoji sequence is now here as a placeholder example
+          placeholder="📜🏠😲🤫🔥😮👥   (Magsimula rito...)"
+          placeholderTextColor="#757575"
+          className="flex-1 px-4 pt-10 font-poppins text-xs  leading-[32px]"
+          textAlignVertical="top"
+          style={{ lineHeight: 70 }} // Matches the height of the background lines
+          onChangeText={setSummary}
+          value={summary}
+        />
+      </View>
+
+      {/* Rubric Table */}
+      <View className="mb-8 border-2 border-black bg-[#f5f5f5]">
+        {/* Table Header */}
+        <View className="h-10 flex-row border-b border-black bg-[#d7ccc8]">
+          <View className="flex-1 items-center justify-center border-r border-black">
+            <Text className="font-poppins-bold text-[10px] text-black">Pamantayan</Text>
+          </View>
+          <View className="w-16 items-center justify-center">
+            <Text className="font-poppins-bold text-[10px] text-black">Puntos</Text>
+          </View>
         </View>
 
-        {/* Instruction Box */}
-        <Text className="font-poppins text-xs text-justify leading-5 text-[#5d4037] mb-4">
-          <Text className="font-bold">Panuto:</Text> Basahing mabuti ang itinakdang kabanata mula sa Nobelang Noli Me Tangere. Gamit ang mga emoji, sumulat ng isang maikling buod na binubuo ng apat (4) hanggang anim (6) na pangungusap.
-          {"\n\n"}
-          Tiyaking malinaw na nakasaad ang pangunahing ideya, mahahalagang pangyayari, at tamang pagkakasunod-sunod ng mga ito. Iwasan ang paglalagay ng labis na detalye, sariling opinyon, o komentaryo; ibatay lamang ang sagot sa mismong nilalaman ng kabanata.
-        </Text>
-
-        {/* Writing Area (Lined Paper) */}
-        <View className="mb-6 overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm relative min-h-[350px]">
-
-          {/* TextInput Overlay with Emoji Placeholder */}
-          <TextInput
-              multiline
-              // The emoji sequence is now here as a placeholder example
-              placeholder="📜🏠😲🤫🔥😮👥   (Magsimula rito...)"
-              placeholderTextColor="#757575"
-              className="flex-1 pt-10 px-4 text-xs font-poppins  leading-[32px]"
-              textAlignVertical="top"
-              style={{ lineHeight: 70 }} // Matches the height of the background lines
-          />
-        </View>
-
-        {/* Rubric Table */}
-        <View className="border-2 border-black bg-[#f5f5f5] mb-8">
-          {/* Table Header */}
-          <View className="flex-row border-b border-black bg-[#d7ccc8] h-10">
-            <View className="flex-1 border-r border-black items-center justify-center">
-              <Text className="font-poppins-bold text-[10px] text-black">Pamantayan</Text>
+        {/* Table Rows */}
+        {rubric.map((row, index) => (
+          <View key={index} className="flex-row border-b border-black bg-white">
+            <View className="flex-1 justify-center border-r border-black p-2">
+              <Text className="text-justify font-poppins text-xs leading-3 text-black">
+                <Text className="font-bold">{row.label.split('–')[0]} –</Text>
+                {row.label.split('–')[1]}
+              </Text>
             </View>
-            <View className="w-16 items-center justify-center">
-              <Text className="font-poppins-bold text-[10px] text-black">Puntos</Text>
+            <View className="w-16 items-center justify-center bg-[#efede6] p-2">
+              <Text className="font-poppins-bold text-xs text-black">{row.points}</Text>
             </View>
           </View>
+        ))}
 
-          {/* Table Rows */}
-          {rubric.map((row, index) => (
-              <View key={index} className="flex-row border-b border-black bg-white">
-                <View className="flex-1 border-r border-black p-2 justify-center">
-                  <Text className="font-poppins text-xs text-justify text-black leading-3">
-                    <Text className="font-bold">{row.label.split('–')[0]} –</Text>
-                    {row.label.split('–')[1]}
-                  </Text>
-                </View>
-                <View className="w-16 p-2 items-center justify-center bg-[#efede6]">
-                  <Text className="font-poppins-bold text-xs text-black">{row.points}</Text>
-                </View>
-              </View>
-          ))}
-
-          {/* Total Row */}
-          <View className="flex-row bg-[#d7ccc8] h-8">
-            <View className="flex-1 border-r border-black items-center justify-center">
-              <Text className="font-poppins-bold text-[10px] text-black">Kabuuang Puntos</Text>
-            </View>
-            <View className="w-16 items-center justify-center">
-              <Text className="font-poppins-bold text-[10px] text-black">25 puntos</Text>
-            </View>
+        {/* Total Row */}
+        <View className="h-8 flex-row bg-[#d7ccc8]">
+          <View className="flex-1 items-center justify-center border-r border-black">
+            <Text className="font-poppins-bold text-[10px] text-black">Kabuuang Puntos</Text>
+          </View>
+          <View className="w-16 items-center justify-center">
+            <Text className="font-poppins-bold text-[10px] text-black">25 puntos</Text>
           </View>
         </View>
       </View>
+      <TouchableOpacity
+        onPress={handleSave}
+        className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
+        <FontAwesome5 name="save" size={16} color="white" />
+        <Text className="ml-2 font-poppins-bold text-white">I-save ang Buod</Text>
+      </TouchableOpacity>
+    </View>
   );
 };

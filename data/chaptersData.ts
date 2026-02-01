@@ -1,41 +1,39 @@
-import { ImageSourcePropType } from 'react-native';
-
 export type QuizItem = {
-    id: number;
-    // Multiple Choice Props
-    question?: string;
-    wordToDefine?: string;
-    options?: string[];
-    correct?: string;
-    // Mind Map Props
-    centerWord?: string;
-    hint?: string;
-    relatedWords?: string[];
-    clues?: string[];
-    term?: string;
+  id: number;
+  // Multiple Choice Props
+  question?: string;
+  wordToDefine?: string;
+  options?: string[];
+  correct?: string;
+  // Mind Map Props
+  centerWord?: string;
+  hint?: string;
+  relatedWords?: string[];
+  clues?: string[];
+  term?: string;
 };
 
 export type Chapter = {
-    id: number;
-    tag: string;
-    title: string;
-    nobela: string;
-    quizType: 'multiple-choice' | 'mind-map' | "punan-mo" | "matching" | "line-connect";
-    quizTitle?: string;
-    quizInstructions?: string;
-    quiz: QuizItem[];
-    matchingChoices?: string[];
-    // Note: Images are passed from HomeScreen params currently,
-    // but you can also map them here if you want static imports.
+  id: number;
+  tag: string;
+  title: string;
+  nobela: string;
+  quizType: 'multiple-choice' | 'mind-map' | 'punan-mo' | 'matching' | 'line-connect';
+  quizTitle?: string;
+  quizInstructions?: string;
+  quiz: QuizItem[];
+  matchingChoices?: string[];
+  // Note: Images are passed from HomeScreen params currently,
+  // but you can also map them here if you want static imports.
 };
 
 export const chaptersData: Chapter[] = [
-    {
-        id: 1,
-        tag: 'KABANATA I',
-        title: 'Isang Pagtitipon',
-        quizType: 'multiple-choice',
-        nobela: `Isang marangyang salo-salo ang ipinag-anyaya ni Don Santiago de los Santos na higit na popular sa taguring Kapitan Tiyago. Ang handaan ay gagawin sa kanyang bahay na nasa Kalye Anloague (na ngayo'y Kalye Juan Luna) na karatig ng Ilog Binundok.
+  {
+    id: 1,
+    tag: 'KABANATA I',
+    title: 'Isang Pagtitipon',
+    quizType: 'multiple-choice',
+    nobela: `Isang marangyang salo-salo ang ipinag-anyaya ni Don Santiago de los Santos na higit na popular sa taguring Kapitan Tiyago. Ang handaan ay gagawin sa kanyang bahay na nasa Kalye Anloague (na ngayo'y Kalye Juan Luna) na karatig ng Ilog Binundok.
 
 Ang paanyaya ay madaling kumalat sa lahat ng sulok ng Maynila. Bawat isa ay gustong dumalo sapagkat ang mayamang kapitan ay kilala bilang isang mabuting tao, mapagbigay at laging bukas ang palad sa mga nangangailangan. 
 
@@ -56,50 +54,53 @@ Ito umano ang nag-utos na hukayin at ilipat ang bangkay ng isang marangal na lal
 Ang ginawa ay itinuturing sa isang kabuktutan ng Kapitan Heneral. Kung kaya inutos nito ang paglilipat sa ibang parokya ang paring Pransiskano bilang parusa. Nagpupuyos sa galit ang pari kapag naaalala niya ang mga kasulatang nawaglit.
 
 Iniwanan na ni Tenyente ang umpukan, pagka-tapos nitong makapagpaliwanag. Sinikap ni Padre Sibyla na pakalmahin ang loob ni Padre Damaso. Lumawig muli ang talayan. Dumating ang ilan pang mga bagong panauhin. Ilan sa mga ito ay ang mag-asawang sina Dr. de Espadaña at Donya Victorina.`,
-        quiz: [
-            {
-                id: 1,
-                question: 'Tila nababalino na sa napakaraming gawain sa paaralan si Cheska.',
-                wordToDefine: 'nababalino',
-                options: ['Naguguluhan', 'Nalulungkot', 'Nalilinaw', 'Nababahala'],
-                correct: 'Naguguluhan'
-            },
-            {
-                id: 2,
-                question: 'Mahahayap ang asal ng sinumang nagkakalat ng maling balita.',
-                wordToDefine: 'mahahayap',
-                options: ['Magiliw', 'Mabagsik', 'Mahinahon', 'Magaspang'],
-                correct: 'Magaspang'
-            },
-            {
-                id: 3,
-                question: 'Masigla ang balitaktakan ng mga mag-aaral tungkol sa kahalagahan ng pagbabasa ng Noli Me Tangere.',
-                wordToDefine: 'balitaktakan',
-                options: ['Kuwentuhan', 'Tunggalian', 'Talakayan', 'Diskusyon'],
-                correct: 'Diskusyon'
-            },
-            {
-                id: 4,
-                question: 'Sa harap ng maraming tao, nilibak siya ng mga kaklase dahil sa kanyang pagkakamali.',
-                wordToDefine: 'nilibak',
-                options: ['Sinaktan', 'Tinukso', 'Tinawanan', 'Iniwanan'],
-                correct: 'Tinawanan'
-            },
-            {
-                id: 5,
-                question: 'Sa nobelang Noli Me Tangere, tinawag na erehe si Ibarra dahil sa kanyang mga makabagong kaisipan.',
-                wordToDefine: 'erehe',
-                options: ['Naghihimagsik', 'Rebelde', 'Kalaban', 'Malikhain'],
-                correct: 'Rebelde' // Note: 'Rebelde' is usually the context, though 'Kalaban ng simbahan' fits strict definition. Adjust if needed.
-            },
-        ]
-    },
-    {
+    quiz: [
+      {
+        id: 1,
+        question: 'Tila nababalino na sa napakaraming gawain sa paaralan si Cheska.',
+        wordToDefine: 'nababalino',
+        options: ['Naguguluhan', 'Nalulungkot', 'Nalilinaw', 'Nababahala'],
+        correct: 'Naguguluhan',
+      },
+      {
         id: 2,
-        tag: 'KABANATA II',
-        title: 'Crisostomo Ibarra',
-        quizType: 'mind-map', // Set to Mind Map for Chapter 2
-        nobela: `Kasamang dumating ni Kapitan Tiyago ang binatang si Crisostomo Ibarra na nakadamit panluksa. Masayang binati ng kapitan ang mga panauhin at humalik sa mga kamay ng pari na hindi siya benindisyonan dahil sa pagkagulat. Si Padre Damaso ay hindi nakaimik at namutla sa pagkakita kay Ibarra. 
+        question: 'Mahahayap ang asal ng sinumang nagkakalat ng maling balita.',
+        wordToDefine: 'mahahayap',
+        options: ['Magiliw', 'Mabagsik', 'Mahinahon', 'Magaspang'],
+        correct: 'Magaspang',
+      },
+      {
+        id: 3,
+        question:
+          'Masigla ang balitaktakan ng mga mag-aaral tungkol sa kahalagahan ng pagbabasa ng Noli Me Tangere.',
+        wordToDefine: 'balitaktakan',
+        options: ['Kuwentuhan', 'Tunggalian', 'Talakayan', 'Diskusyon'],
+        correct: 'Diskusyon',
+      },
+      {
+        id: 4,
+        question:
+          'Sa harap ng maraming tao, nilibak siya ng mga kaklase dahil sa kanyang pagkakamali.',
+        wordToDefine: 'nilibak',
+        options: ['Sinaktan', 'Tinukso', 'Tinawanan', 'Iniwanan'],
+        correct: 'Tinawanan',
+      },
+      {
+        id: 5,
+        question:
+          'Sa nobelang Noli Me Tangere, tinawag na erehe si Ibarra dahil sa kanyang mga makabagong kaisipan.',
+        wordToDefine: 'erehe',
+        options: ['Naghihimagsik', 'Rebelde', 'Kalaban', 'Malikhain'],
+        correct: 'Rebelde', // Note: 'Rebelde' is usually the context, though 'Kalaban ng simbahan' fits strict definition. Adjust if needed.
+      },
+    ],
+  },
+  {
+    id: 2,
+    tag: 'KABANATA II',
+    title: 'Crisostomo Ibarra',
+    quizType: 'mind-map', // Set to Mind Map for Chapter 2
+    nobela: `Kasamang dumating ni Kapitan Tiyago ang binatang si Crisostomo Ibarra na nakadamit panluksa. Masayang binati ng kapitan ang mga panauhin at humalik sa mga kamay ng pari na hindi siya benindisyonan dahil sa pagkagulat. Si Padre Damaso ay hindi nakaimik at namutla sa pagkakita kay Ibarra. 
 
 Si Ibarra ay ipinakilala ni Kapitan Tiyago na anak ng kanyang kaibigang namatay. Kararating pa lamang nito sa Europa kung saan siya ay tumira nang pitong taon upang mag-aral. Si Crisostomo Ibarra ay kayumanggi kahit na ito ay may dugong Espanyol. 
 
@@ -111,20 +112,20 @@ Naiwan si Ibarra na walang makausap. Dahil sa kaugaliang natutunan niya sa ibang
 
 Isa rito ay ang manunulat na huminto na sa pagsusulat. Lumapit kay Ibarra ang isang panauhin, si Kapitan Tinong, upang anyayahan siya sa tanghalian kinabukasan. Tumanggi siya dahil pauwi na siya sa San Diego.
 `,
-        quiz: [
-            {
-                id: 1,
-                centerWord: 'IKINAILA',
-                hint: 'Ginagamit ito upang ipahayag na ang isang tao ay hindi umamin o sadyang itinago ang isang bagay. Karaniwan ay isang katotohanan, damdamin, o pagkakasangkot.',
-            }
-        ]
-    },
-    {
-        id: 3,
-        tag: 'KABANATA III',
-        title: 'Ang Hapunan',
-        quizType: 'punan-mo',
-        nobela: `Oras na ng kainan at ang mga panauhin ay nagtipon sa hapag-kainan. Samantalang siyang-siya si Padre Sybila, si Padre Damaso naman ay inis na pinagsisikaran ang bawa't madaanan. Hindi siya pinapansin ng ibang panauhin na abala sa pagkain at pagpuri sa masarap na handa.
+    quiz: [
+      {
+        id: 1,
+        centerWord: 'IKINAILA',
+        hint: 'Ginagamit ito upang ipahayag na ang isang tao ay hindi umamin o sadyang itinago ang isang bagay. Karaniwan ay isang katotohanan, damdamin, o pagkakasangkot.',
+      },
+    ],
+  },
+  {
+    id: 3,
+    tag: 'KABANATA III',
+    title: 'Ang Hapunan',
+    quizType: 'punan-mo',
+    nobela: `Oras na ng kainan at ang mga panauhin ay nagtipon sa hapag-kainan. Samantalang siyang-siya si Padre Sybila, si Padre Damaso naman ay inis na pinagsisikaran ang bawa't madaanan. Hindi siya pinapansin ng ibang panauhin na abala sa pagkain at pagpuri sa masarap na handa.
 
 Nainis naman si Donya Victorina sa tenyente sapagkat natapakan ang kola ng kanyang saya habang tinitingnan nito ang pagkakulot ng kanyang buhok. Sa kabisera umupo si Crisostomo Ibarra habang nagtatalo ang dalawang pati kung sino ang uupo sa kabilang dulo. 
 
@@ -140,57 +141,60 @@ Sa kuwento ng binata, nalaman ng mga kausap niya na marami siyang bansang napunt
 
 Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niya ay mga alaala niya noong pumupunta pa siya sa bahay nila upang kumain. Nagpaalam si Ibarra upang umalis kahit na siya ay pinigilan ni Kapitan Tiyago dahil darating na si Maria Clara. Naiwang nagdadaldal si Padre Damaso tungkol sa pagbawal ng pamahalaan sa pagpapahintulot sa indiyo na mag-aral sa ibang bansa.
 `,
-        quiz: [
-            {
-                id: 1,
-                question: 'Sa bahay, ang bunso ang madalas na pinagsisikaran ng mga kapatid kapag may problema.',
-                wordToDefine: 'pinagsisikaran',
-                correct: 'PAGIINITAN', // Answer: PAG-IINITAN (simplified to PAGIINITAN for boxes)
-                // Visual Clues based on your image: P A _ _ _ _ _ _ T N
-                clues: ['P', '', '', 'A', '', '-','', '','', '','T', '', 'N']
-            },
-            {
-                id: 2,
-                question: 'Nadumihan ang kola ng saya ni Maria habang siya ay naglalakad sa putikan.',
-                wordToDefine: 'kola',
-                correct: 'DULO',
-                // Visual Clues: D _ _ O
-                clues: ['D', '', '', 'O']
-            },
-            {
-                id: 3,
-                question: 'Sa pulong, sumabad ang isang kasapi kahit hindi pa siya tinatawag.',
-                wordToDefine: 'sumabad',
-                correct: 'NAKISABAT',
-                // Visual Clues: N K _ S _ B _ T
-                clues: ['N', '', 'K', '', 'S', '', 'B', '', 'T']
-            },
-            {
-                id: 4,
-                question: 'Nakatanggap ng hatid-kawad ang pamilya mula sa kanilang kaanak na nasa probinsya.',
-                wordToDefine: 'hatid-kawad',
-                correct: 'MENSAHE',
-                // Visual Clues: M _ _ _ _ H E
-                clues: ['M', '', '', '', '', 'H', 'E']
-            },
-            {
-                id: 5,
-                question: 'Noong panahon ng Espanyol, tinawag na Indiyo ang mga katutubong Pilipino.',
-                wordToDefine: 'Indiyo',
-                correct: 'MANGMANG',
-                // Visual Clues: M _ N _ M _ N _
-                clues: ['M', '', 'N', '', 'M', '', 'N', '']
-            },
-        ]
-    },
-    {
+    quiz: [
+      {
+        id: 1,
+        question:
+          'Sa bahay, ang bunso ang madalas na pinagsisikaran ng mga kapatid kapag may problema.',
+        wordToDefine: 'pinagsisikaran',
+        correct: 'PAGIINITAN', // Answer: PAG-IINITAN (simplified to PAGIINITAN for boxes)
+        // Visual Clues based on your image: P A _ _ _ _ _ _ T N
+        clues: ['P', '', '', 'A', '', '-', '', '', '', '', 'T', '', 'N'],
+      },
+      {
+        id: 2,
+        question: 'Nadumihan ang kola ng saya ni Maria habang siya ay naglalakad sa putikan.',
+        wordToDefine: 'kola',
+        correct: 'DULO',
+        // Visual Clues: D _ _ O
+        clues: ['D', '', '', 'O'],
+      },
+      {
+        id: 3,
+        question: 'Sa pulong, sumabad ang isang kasapi kahit hindi pa siya tinatawag.',
+        wordToDefine: 'sumabad',
+        correct: 'NAKISABAT',
+        // Visual Clues: N K _ S _ B _ T
+        clues: ['N', '', 'K', '', 'S', '', 'B', '', 'T'],
+      },
+      {
         id: 4,
-        tag: 'KABANATA IV',
-        title: 'Erehe at Pilibustero',
-        quizType: 'matching',
-        quizTitle: 'UGNAYIN MO!',
-        quizInstructions: 'Panuto: Iugnay ang salita sa tamang kahulugan. Pindutin ang kahon ng kahulugan at pagkatapos ay pindutin ang patlang bago ang numero.',
-        nobela: `Naglakad na si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis. Hindi niya alam sinundan pala siya ni Tenyente Guevarra. Pinaalalahanan siya ng tenyente na mag-ingat dahil baka mapahamak din siyang katulad ng kanyang ama. 
+        question:
+          'Nakatanggap ng hatid-kawad ang pamilya mula sa kanilang kaanak na nasa probinsya.',
+        wordToDefine: 'hatid-kawad',
+        correct: 'MENSAHE',
+        // Visual Clues: M _ _ _ _ H E
+        clues: ['M', '', '', '', '', 'H', 'E'],
+      },
+      {
+        id: 5,
+        question: 'Noong panahon ng Espanyol, tinawag na Indiyo ang mga katutubong Pilipino.',
+        wordToDefine: 'Indiyo',
+        correct: 'MANGMANG',
+        // Visual Clues: M _ N _ M _ N _
+        clues: ['M', '', 'N', '', 'M', '', 'N', ''],
+      },
+    ],
+  },
+  {
+    id: 4,
+    tag: 'KABANATA IV',
+    title: 'Erehe at Pilibustero',
+    quizType: 'matching',
+    quizTitle: 'UGNAYIN MO!',
+    quizInstructions:
+      'Panuto: Iugnay ang salita sa tamang kahulugan. Pindutin ang kahon ng kahulugan at pagkatapos ay pindutin ang patlang bago ang numero.',
+    nobela: `Naglakad na si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis. Hindi niya alam sinundan pala siya ni Tenyente Guevarra. Pinaalalahanan siya ng tenyente na mag-ingat dahil baka mapahamak din siyang katulad ng kanyang ama. 
 
 Inusisa ni Ibarra kung ano ang tunay na nangyari sa kanyang ama. Ang alam lang niya ay abala ito sa mga gawain kaya humingi ng paumanhin kung hindi siya makasulat sa anak. Isinalaysay ng tenyente ang gustong malaman ni Ibarra. 
 
@@ -206,30 +210,31 @@ Dinagdagan pa ang mga paratang kagaya nang pagbabasa ng pinagbabawal na aklat at
 
 Sa pagsisiyasat, ay napatunayang namatay ang artilyero dahil sa namuong dugo nito sa ulo. Nang malapit nang lumaya si Don Rafael, namatay ito, marahil, sa hindi nakayanang mga sama ng loob at pahirap. Dumating na sila sa harap ng kuwartel kaya kinamayan na lang ng tenyente si Ibarra at sinabihang tanungin si Kapitan Tiyago sa mga iba pang nangyari. Sumakay na si Ibarra sa kalesa.
 `,
-        quiz: [
-            { id: 1, term: 'Erehe', correct: 'Lumalabag sa aral ng simbahan' },
-            { id: 2, term: 'Pilibustero', correct: 'Kaaway ng pamahalaan' },
-            { id: 3, term: 'Sumuray-suray', correct: 'Hindi nababalanse ang lakad' },
-            { id: 4, term: 'Artilyero', correct: 'Sundalong may kanyon' },
-            { id: 5, term: 'Pag-uusig', correct: 'Malupit na pang-aapi' },
-        ],
-        // The pool of answers (jumbled)
-        matchingChoices: [
-            'Hindi nababalanse ang lakad',
-            'Sundalong may kanyon',
-            'Kaaway ng pamahalaan',
-            'Malupit na pang-aapi',
-            'Lumalabag sa aral ng simbahan'
-        ]
-    },
-    {
-        id: 5,
-        tag: 'KABANATA V',
-        title: 'Isang Tala sa Gabing Madilim',
-        quizType: 'matching',
-        quizTitle: 'HANAPIN MO!',
-        quizInstructions: 'Panuto: Hanapin ang kahulugan ng inilalahad sa bawat numero. Ilagay sa espasyo bago ang numero ang kahon na may salita ng inilalarawan.',
-        nobela: `Sakay ng kalesa, dumating si Ibarra sa Fonda de Lala. (Ito ay isang uri ng panuluyan, na tinutuluyan niya kapag siya ay nasa Maynila). Kaagad na nagtuloy si Ibarra sa kanyang silid at naupo sa isang silyon. Sa sinapit ng ama, gulong-gulo ang isip nito. Maya-maya ginala ang paningin sa kalawakan ng himpapawid.
+    quiz: [
+      { id: 1, term: 'Erehe', correct: 'Lumalabag sa aral ng simbahan' },
+      { id: 2, term: 'Pilibustero', correct: 'Kaaway ng pamahalaan' },
+      { id: 3, term: 'Sumuray-suray', correct: 'Hindi nababalanse ang lakad' },
+      { id: 4, term: 'Artilyero', correct: 'Sundalong may kanyon' },
+      { id: 5, term: 'Pag-uusig', correct: 'Malupit na pang-aapi' },
+    ],
+    // The pool of answers (jumbled)
+    matchingChoices: [
+      'Hindi nababalanse ang lakad',
+      'Sundalong may kanyon',
+      'Kaaway ng pamahalaan',
+      'Malupit na pang-aapi',
+      'Lumalabag sa aral ng simbahan',
+    ],
+  },
+  {
+    id: 5,
+    tag: 'KABANATA V',
+    title: 'Isang Tala sa Gabing Madilim',
+    quizType: 'matching',
+    quizTitle: 'HANAPIN MO!',
+    quizInstructions:
+      'Panuto: Hanapin ang kahulugan ng inilalahad sa bawat numero. Ilagay sa espasyo bago ang numero ang kahon na may salita ng inilalarawan.',
+    nobela: `Sakay ng kalesa, dumating si Ibarra sa Fonda de Lala. (Ito ay isang uri ng panuluyan, na tinutuluyan niya kapag siya ay nasa Maynila). Kaagad na nagtuloy si Ibarra sa kanyang silid at naupo sa isang silyon. Sa sinapit ng ama, gulong-gulo ang isip nito. Maya-maya ginala ang paningin sa kalawakan ng himpapawid.
 
 Mula sa bintana, natanaw niya ang isang maliwanag na bahay sa kabila ng ilog. Naririnig niya ang kalansing ng mga kubyertos at pinggan. Dinig din niya ang tugtugin ng orkestra.
 
@@ -239,49 +244,44 @@ Ang mga umpukan naman ng mga Espanyol, Pilipino, pari, Intsik, militar ay nakatu
 
 Si Padre Sibyla ay siyang-siya sa pakikipag-usap sa mga dilag samantalang si Donya Victoria ay matiyagang inaayos ang buhok ng dalagang hinahangaan ng lahat. Dahil sa pagal ang isip at katawan ni Ibarra sa paglalim ng gabi, madali siyang naktulog at nagising kinabukasan na. Ang tanging hindi inabot ng antok ay ang batang Pransiskano.
 `,
-        quiz: [
-            {
-                id: 1,
-                term: 'Isang sasakyang pangtao na hinihila ng kabayo at karaniwang ginagamit noong unang panahon.',
-                correct: 'Kalesa'
-            },
-            {
-                id: 2,
-                term: 'Isang panuluyan kung saan maaaring magpahinga o matuluyan ang mga manlalakbay.',
-                correct: 'Fonda'
-            },
-            {
-                id: 3,
-                term: 'Tunog na nililikha kapag nagsasalpukan ang mga metal na bagay tulad ng pinggan o kubyertos.',
-                correct: 'Kalansing'
-            },
-            {
-                id: 4,
-                term: 'Tela o pinagtagpi-tagping materyal na ginagamit sa paggawa ng damit o iba pang gamit.',
-                correct: 'Habi'
-            },
-            {
-                id: 5,
-                term: 'Isang grupo ng mga musikero na tumutugtog ng magkakasamang musika.',
-                correct: 'Orkestra'
-            },
-        ],
-        matchingChoices: [
-            'Kalesa',
-            'Fonda',
-            'Kalansing',
-            'Habi',
-            'Orkestra'
-        ]
-    },
-    {
-        id: 6,
-        tag: 'KABANATA VI',
-        title: 'Si Kapitan Tiyago',
-        quizType: 'line-connect',
-        quizTitle: 'HULAAN MO!',
-        quizInstructions: 'Basahin at unawain ang hint sa kanan at ikonekta ito sa salitang tinutukoy sa kaliwa.',
-        nobela: `Ang mga katangian ni Kapitan Tiyago ay itinuturing na hulog ng langit. Siya ay pandak, di kaputian at may bilugang mukha. Siya ay tinatayang nasa pagitan ng 35 taong gulang. Maitim ang kanyang buhok at kung hindi lamang nanabako at ngumanganga, maituturing na siya ay magandang lalaki. 
+    quiz: [
+      {
+        id: 1,
+        term: 'Isang sasakyang pangtao na hinihila ng kabayo at karaniwang ginagamit noong unang panahon.',
+        correct: 'Kalesa',
+      },
+      {
+        id: 2,
+        term: 'Isang panuluyan kung saan maaaring magpahinga o matuluyan ang mga manlalakbay.',
+        correct: 'Fonda',
+      },
+      {
+        id: 3,
+        term: 'Tunog na nililikha kapag nagsasalpukan ang mga metal na bagay tulad ng pinggan o kubyertos.',
+        correct: 'Kalansing',
+      },
+      {
+        id: 4,
+        term: 'Tela o pinagtagpi-tagping materyal na ginagamit sa paggawa ng damit o iba pang gamit.',
+        correct: 'Habi',
+      },
+      {
+        id: 5,
+        term: 'Isang grupo ng mga musikero na tumutugtog ng magkakasamang musika.',
+        correct: 'Orkestra',
+      },
+    ],
+    matchingChoices: ['Kalesa', 'Fonda', 'Kalansing', 'Habi', 'Orkestra'],
+  },
+  {
+    id: 6,
+    tag: 'KABANATA VI',
+    title: 'Si Kapitan Tiyago',
+    quizType: 'line-connect',
+    quizTitle: 'HULAAN MO!',
+    quizInstructions:
+      'Basahin at unawain ang hint sa kanan at ikonekta ito sa salitang tinutukoy sa kaliwa.',
+    nobela: `Ang mga katangian ni Kapitan Tiyago ay itinuturing na hulog ng langit. Siya ay pandak, di kaputian at may bilugang mukha. Siya ay tinatayang nasa pagitan ng 35 taong gulang. Maitim ang kanyang buhok at kung hindi lamang nanabako at ngumanganga, maituturing na siya ay magandang lalaki. 
 
 Siya ang pakamayaman sa Binundok dahil marami siyang negosyo at mga iba pang klase ng ari-arian. Tanyag din siya sa Pampanga at Laguna bilang asendero. Hindi kataka-taka na para siyang lubong hinihipan sa pagpintog ng kanyang yaman. 
 
@@ -307,20 +307,45 @@ Lumaki sya sa pagmamahal na inukol ni Tiya Isabel, ng kanyang ama, at ng mga pra
 
 Pagpasok ni Maria sa kombento, nagpunta naman si Ibarra sa Europa upang mag-aral. Gayunman, nagkasundo sina Don Rafael at Kapitan Tiyago na, maski nagkalayo ang kanilang mga anak, pagdating ng tamang panahon, silang dalawa ay pag-iisahing dibdib. Ito ay sa kanilang paniniwala na ang dalawa ay tunay na nag-iibigan.
 `,
-        quiz: [
-            { id: 1, term: 'Kabanalan', correct: 'Uri ng matibay na pananalig o paniniwala na sinusukat sa pamamagitan ng pagsunod sa batas o ritwal.' },
-            { id: 2, term: 'Kakuriputan', correct: 'Ang kilos o ugali ng sobrang pagtitipid o pag-iingat sa pera na madalas humahadlang sa sariling kaginhawaan.' },
-            { id: 3, term: 'Pagpupula', correct: 'Tunay na sukatan ng yaman, kung saan ipinapakita ng isang tao ang kanyang ari-arian at negosyo upang makilala sa lipunan.' }, // Based on context clues from image layout, though linguistically unusual
-            { id: 4, term: 'Sipsip', correct: 'Ang kilos ng sobrang pagyuko o pakikisama sa mga may kapangyarihan upang makamit ang pansariling kapakinabangan.' },
-            { id: 5, term: 'Handog', correct: 'Ang pagkilos na naglalayong mapagkalooban ng pabor o gantimpala ang iba sa tuwing may okasyon o pagdiriwang.' },
-        ],
-        // The pool of definitions to be displayed on the right side (Jumbled order)
-        matchingChoices: [
-            'Ang kilos ng sobrang pagyuko o pakikisama sa mga may kapangyarihan upang makamit ang pansariling kapakinabangan.',
-            'Uri ng matibay na pananalig o paniniwala na sinusukat sa pamamagitan ng pagsunod sa batas o ritwal.',
-            'Ang pagkilos na naglalayong mapagkalooban ng pabor o gantimpala ang iba sa tuwing may okasyon o pagdiriwang.',
-            'Ang kilos o ugali ng sobrang pagtitipid o pag-iingat sa pera na madalas humahadlang sa sariling kaginhawaan.',
-            'Tunay na sukatan ng yaman, kung saan ipinapakita ng isang tao ang kanyang ari-arian at negosyo upang makilala sa lipunan.'
-        ]
-    },
+    quiz: [
+      {
+        id: 1,
+        term: 'Kabanalan',
+        correct:
+          'Uri ng matibay na pananalig o paniniwala na sinusukat sa pamamagitan ng pagsunod sa batas o ritwal.',
+      },
+      {
+        id: 2,
+        term: 'Kakuriputan',
+        correct:
+          'Ang kilos o ugali ng sobrang pagtitipid o pag-iingat sa pera na madalas humahadlang sa sariling kaginhawaan.',
+      },
+      {
+        id: 3,
+        term: 'Pagpupula',
+        correct:
+          'Tunay na sukatan ng yaman, kung saan ipinapakita ng isang tao ang kanyang ari-arian at negosyo upang makilala sa lipunan.',
+      }, // Based on context clues from image layout, though linguistically unusual
+      {
+        id: 4,
+        term: 'Sipsip',
+        correct:
+          'Ang kilos ng sobrang pagyuko o pakikisama sa mga may kapangyarihan upang makamit ang pansariling kapakinabangan.',
+      },
+      {
+        id: 5,
+        term: 'Handog',
+        correct:
+          'Ang pagkilos na naglalayong mapagkalooban ng pabor o gantimpala ang iba sa tuwing may okasyon o pagdiriwang.',
+      },
+    ],
+    // The pool of definitions to be displayed on the right side (Jumbled order)
+    matchingChoices: [
+      'Ang kilos ng sobrang pagyuko o pakikisama sa mga may kapangyarihan upang makamit ang pansariling kapakinabangan.',
+      'Uri ng matibay na pananalig o paniniwala na sinusukat sa pamamagitan ng pagsunod sa batas o ritwal.',
+      'Ang pagkilos na naglalayong mapagkalooban ng pabor o gantimpala ang iba sa tuwing may okasyon o pagdiriwang.',
+      'Ang kilos o ugali ng sobrang pagtitipid o pag-iingat sa pera na madalas humahadlang sa sariling kaginhawaan.',
+      'Tunay na sukatan ng yaman, kung saan ipinapakita ng isang tao ang kanyang ari-arian at negosyo upang makilala sa lipunan.',
+    ],
+  },
 ];

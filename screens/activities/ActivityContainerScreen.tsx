@@ -4,7 +4,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { Paghihinuha, Paglilinaw, Pagsisiyasat, Pagbubuod, Paghihinuha4to6, Paglilinaw4to6, Pagsisiyasat4to6, Pagbubuod4to6 } from './ActivityComponents';
+import {
+  Paghihinuha,
+  Paglilinaw,
+  Pagsisiyasat,
+  Pagbubuod,
+  Paghihinuha4to6,
+  Paglilinaw4to6,
+  Pagsisiyasat4to6,
+  Pagbubuod4to6,
+} from './ActivityComponents';
 import { areChaptersRead } from '../../services/db';
 
 type ActivityScreenRouteProp = RouteProp<RootStackParamList, 'ActivityContainer'>;
@@ -76,20 +85,20 @@ export default function ActivityContainerScreen() {
     switch (activeTab) {
       case 'paghihinuha':
         // Only show the specific component if the range is 01-03
-        if (rangeId === '01-03') return <Paghihinuha />;
-        if (rangeId === '04-06') return <Paghihinuha4to6/>;
+        if (rangeId === '01-03') return <Paghihinuha rangeId={rangeId} />;
+        if (rangeId === '04-06') return <Paghihinuha4to6 rangeId={rangeId} />;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'pagsisiyasat':
-        if (rangeId === '01-03') return <Pagsisiyasat/>;
-        if (rangeId === '04-06') return <Pagsisiyasat4to6/>;
+        if (rangeId === '01-03') return <Pagsisiyasat rangeId={rangeId} />;
+        if (rangeId === '04-06') return <Pagsisiyasat4to6 rangeId={rangeId} />;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'paglilinaw':
-        if (rangeId === '01-03') return <Paglilinaw/>;
-        if (rangeId === '04-06') return <Paglilinaw4to6/>;
+        if (rangeId === '01-03') return <Paglilinaw rangeId={rangeId} />;
+        if (rangeId === '04-06') return <Paglilinaw4to6 rangeId={rangeId} />;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       case 'pagbubuod':
-        if (rangeId === '01-03') return <Pagbubuod/>;
-        if (rangeId === '04-06') return <Pagbubuod4to6/>;
+        if (rangeId === '01-03') return <Pagbubuod rangeId={rangeId} />;
+        if (rangeId === '04-06') return <Pagbubuod4to6 rangeId={rangeId} />;
         return <Placeholder name="Paghihinuha (Ibang Kabanata)" />;
       default:
         return null;
