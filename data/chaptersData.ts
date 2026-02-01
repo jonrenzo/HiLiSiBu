@@ -65,7 +65,7 @@ Iniwanan na ni Tenyente ang umpukan, pagka-tapos nitong makapagpaliwanag. Sinika
       {
         id: 2,
         question: 'Mahahayap ang asal ng sinumang nagkakalat ng maling balita.',
-        wordToDefine: 'mahahayap',
+        wordToDefine: 'Mahahayap',
         options: ['Magiliw', 'Mabagsik', 'Mahinahon', 'Magaspang'],
         correct: 'Magaspang',
       },
@@ -191,9 +191,9 @@ Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niy
     tag: 'KABANATA IV',
     title: 'Erehe at Pilibustero',
     quizType: 'matching',
-    quizTitle: 'UGNAYIN MO!',
+    quizTitle: 'PARES SALITA!',
     quizInstructions:
-      'Panuto: Iugnay ang salita sa tamang kahulugan. Pindutin ang kahon ng kahulugan at pagkatapos ay pindutin ang patlang bago ang numero.',
+      'Piliin sa kahon ang wastong kahulugan ng salita sa bawat bilang. Pagkatapos ay bumuo ng sariling pangungusap gamit and mga salitang ito.',
     nobela: `Naglakad na si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis. Hindi niya alam sinundan pala siya ni Tenyente Guevarra. Pinaalalahanan siya ng tenyente na mag-ingat dahil baka mapahamak din siyang katulad ng kanyang ama. 
 
 Inusisa ni Ibarra kung ano ang tunay na nangyari sa kanyang ama. Ang alam lang niya ay abala ito sa mga gawain kaya humingi ng paumanhin kung hindi siya makasulat sa anak. Isinalaysay ng tenyente ang gustong malaman ni Ibarra. 
@@ -233,7 +233,7 @@ Sa pagsisiyasat, ay napatunayang namatay ang artilyero dahil sa namuong dugo nit
     quizType: 'matching',
     quizTitle: 'HANAPIN MO!',
     quizInstructions:
-      'Panuto: Hanapin ang kahulugan ng inilalahad sa bawat numero. Ilagay sa espasyo bago ang numero ang kahon na may salita ng inilalarawan.',
+      'Hanapin ang kahulugan ng inilalahad sa bawat numero. Ilagay ang iyong sagot sa espasyo bago ang numero.',
     nobela: `Sakay ng kalesa, dumating si Ibarra sa Fonda de Lala. (Ito ay isang uri ng panuluyan, na tinutuluyan niya kapag siya ay nasa Maynila). Kaagad na nagtuloy si Ibarra sa kanyang silid at naupo sa isang silyon. Sa sinapit ng ama, gulong-gulo ang isip nito. Maya-maya ginala ang paningin sa kalawakan ng himpapawid.
 
 Mula sa bintana, natanaw niya ang isang maliwanag na bahay sa kabila ng ilog. Naririnig niya ang kalansing ng mga kubyertos at pinggan. Dinig din niya ang tugtugin ng orkestra.

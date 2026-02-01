@@ -231,7 +231,7 @@ export default function ChapterDetailScreen() {
                       </Text>
                       <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-ink opacity-80">
                         <Text className="font-bold">Panuto: </Text>
-                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang angkop na
+                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinaka angkop na
                         kasingkahulugan.
                       </Text>
                       {chapterContent.quiz.map((item, index) => (
@@ -277,7 +277,7 @@ export default function ChapterDetailScreen() {
                         Buuin ang Diwa
                       </Text>
                       <Text className="mb-6 px-4 text-center font-poppins text-xs text-ink opacity-70">
-                        I-type ang iyong mga sagot sa loob ng mga bilog.
+                        Isulat sa bawat hugis and unang salitang pumasok sa iyong isipan na may kaugnayan sa salitang nasa gitna.
                       </Text>
 
                       <View className="relative mb-6 h-[300px] w-full items-center justify-center">
@@ -328,7 +328,7 @@ export default function ChapterDetailScreen() {
                       <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-ink opacity-80">
                         <Text className="font-bold">Panuto: </Text>
                         Isulat ang nawawalang titik sa ilang kahon upang mabuo ang kahulugan ng
-                        salitang may salungguhit.
+                        salitang may salungguhit. Gamiting gabay ang pangungusap sa bawat kahon.
                       </Text>
 
                       <View className="flex-row flex-wrap justify-between">
