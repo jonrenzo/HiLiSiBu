@@ -13,17 +13,17 @@ import {
   LayoutRectangle,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import Svg, { Line } from 'react-native-svg';
 import { chaptersData } from '../data/chaptersData';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { markChapterAsRead } from '../services/db';
+import { markChapterAsRead, saveTalasalitaanAnswers, getTalasalitaanAnswers } from '../services/db';
 
 type ChapterDetailRouteProp = RouteProp<RootStackParamList, 'ChapterDetail'>;
 
 export default function ChapterDetailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<ChapterDetailRouteProp>();
 
   const { id, title, tag, image } = route.params;
@@ -62,7 +62,63 @@ export default function ChapterDetailScreen() {
   const [termLayouts, setTermLayouts] = useState<Record<number, LayoutRectangle>>({});
   const [defLayouts, setDefLayouts] = useState<Record<string, LayoutRectangle>>({});
 
+  // --- DATA LOADING ---
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadAnswers = async () => {
+        if (chapterContent) {
+          const savedAnswers = await getTalasalitaanAnswers(id, chapterContent.quizType);
+          if (savedAnswers) {
+            switch (chapterContent.quizType) {
+              case 'multiple-choice':
+                setSelectedAnswers(savedAnswers);
+                break;
+              case 'mind-map':
+                setMindMapInputs(savedAnswers);
+                break;
+              case 'punan-mo':
+                setPunanInputs(savedAnswers);
+                break;
+              case 'matching':
+                setMatches(savedAnswers);
+                break;
+              case 'line-connect':
+                setConnectedPairs(savedAnswers);
+                break;
+            }
+          }
+        }
+      };
+      loadAnswers();
+    }, [id, chapterContent])
+  );
+
   // --- HANDLERS ---
+
+  const handleSave = async () => {
+    let answersToSave;
+    switch (chapterContent?.quizType) {
+      case 'multiple-choice':
+        answersToSave = selectedAnswers;
+        break;
+      case 'mind-map':
+        answersToSave = mindMapInputs;
+        break;
+      case 'punan-mo':
+        answersToSave = punanInputs;
+        break;
+      case 'matching':
+        answersToSave = matches;
+        break;
+      case 'line-connect':
+        answersToSave = connectedPairs;
+        break;
+      default:
+        return;
+    }
+    await saveTalasalitaanAnswers(id, chapterContent!.quizType, answersToSave);
+    Alert.alert('Sagot Nai-save!', 'Ang iyong mga sagot ay nai-save na.');
+  };
 
   // Multiple Choice
   const handleSelectAnswer = (questionId: number, answer: string, correctAnswer: string) => {
@@ -231,8 +287,8 @@ export default function ChapterDetailScreen() {
                       </Text>
                       <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-ink opacity-80">
                         <Text className="font-bold">Panuto: </Text>
-                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinaka angkop na
-                        kasingkahulugan.
+                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinaka
+                        angkop na kasingkahulugan.
                       </Text>
                       {chapterContent.quiz.map((item, index) => (
                         <View key={item.id} className="mb-8">
@@ -277,7 +333,8 @@ export default function ChapterDetailScreen() {
                         Buuin ang Diwa
                       </Text>
                       <Text className="mb-6 px-4 text-center font-poppins text-xs text-ink opacity-70">
-                        Isulat sa bawat hugis and unang salitang pumasok sa iyong isipan na may kaugnayan sa salitang nasa gitna.
+                        Isulat sa bawat hugis and unang salitang pumasok sa iyong isipan na may
+                        kaugnayan sa salitang nasa gitna.
                       </Text>
 
                       <View className="relative mb-6 h-[300px] w-full items-center justify-center">
@@ -568,6 +625,16 @@ export default function ChapterDetailScreen() {
                       </View>
                     </View>
                   )}
+
+                  <View className="mt-8 flex-row justify-around">
+                    <TouchableOpacity
+                      onPress={handleSave}
+                      className="flex-1 rounded-lg bg-[#8d6e63] px-4 py-3">
+                      <Text className="text-center font-poppins-bold text-white">
+                        I-save ang Sagot
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ) : (
                 // NOBELA VIEW

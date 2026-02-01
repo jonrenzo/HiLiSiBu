@@ -15,7 +15,7 @@ export const getDB = async () => {
   return dbInstance;
 };
 
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // --- INITIALIZATION ---
 export const initDatabase = async () => {
@@ -31,6 +31,7 @@ export const initDatabase = async () => {
       await db.execAsync(`
         DROP TABLE IF EXISTS activity_answers;
         DROP TABLE IF EXISTS scores;
+        DROP TABLE IF EXISTS talasalitaan_answers;
       `);
       console.log('Old tables dropped.');
     }
@@ -79,6 +80,16 @@ export const initDatabase = async () => {
       );
     `);
 
+    // Create TalasalitaanAnswers Table
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS talasalitaan_answers (
+        chapter_id INTEGER NOT NULL,
+        quiz_type TEXT NOT NULL,
+        answers TEXT NOT NULL,
+        PRIMARY KEY (chapter_id, quiz_type)
+      );
+    `);
+
     if (currentVersion < DB_VERSION) {
       await db.execAsync(`PRAGMA user_version = ${DB_VERSION}`);
       console.log('Database upgrade complete.');
@@ -87,6 +98,64 @@ export const initDatabase = async () => {
     console.log('Database initialized successfully.');
   } catch (error) {
     console.error('Database initialization failed:', error);
+  }
+};
+
+// --- TALASALITAAN ---
+
+export const saveTalasalitaanAnswers = async (
+  chapterId: number,
+  quizType: string,
+  answers: any
+) => {
+  try {
+    const db = await getDB();
+    const answersJSON = JSON.stringify(answers);
+    await db.runAsync(
+      'INSERT OR REPLACE INTO talasalitaan_answers (chapter_id, quiz_type, answers) VALUES (?, ?, ?)',
+      chapterId,
+      quizType,
+      answersJSON
+    );
+    console.log(`Talasalitaan answers for Chapter ${chapterId} (${quizType}) saved.`);
+  } catch (error) {
+    console.error('Error saving talasalitaan answers:', error);
+  }
+};
+
+export const getTalasalitaanAnswers = async (chapterId: number, quizType: string) => {
+  try {
+    const db = await getDB();
+    const result = await db.getFirstAsync<{ answers: string }>(
+      'SELECT answers FROM talasalitaan_answers WHERE chapter_id = ? AND quiz_type = ?',
+      chapterId,
+      quizType
+    );
+    if (result) {
+      return JSON.parse(result.answers);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting talasalitaan answers:', error);
+    return null;
+  }
+};
+
+export const getAllTalasalitaanAnswers = async () => {
+  try {
+    const db = await getDB();
+    const results = await db.getAllAsync<{
+      chapter_id: number;
+      quiz_type: string;
+      answers: string;
+    }>('SELECT chapter_id, quiz_type, answers FROM talasalitaan_answers');
+    return results.map((row) => ({
+      ...row,
+      answers: JSON.parse(row.answers),
+    }));
+  } catch (error) {
+    console.error('Error getting all talasalitaan answers:', error);
+    return [];
   }
 };
 

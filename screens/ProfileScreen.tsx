@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Clipboard } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, CommonActions, useIsFocused } from '@react-navigation/native';
-import { getUser, getAllAnswers, clearAllData } from '../services/db';
+import { getUser, getAllAnswers, clearAllData, getAllTalasalitaanAnswers } from '../services/db';
+import QRCode from 'react-native-qrcode-svg';
+import { activityQuestions } from '../data/questions';
 
 const getTotalQuestions = () => {
-  return 36;
+  return 36 + 26; // 36 from activities + 26 from talasalitaan
 };
 
 export default function ProfileScreen() {
@@ -14,8 +16,11 @@ export default function ProfileScreen() {
   const isFocused = useIsFocused();
   const [user, setUser] = useState<any>(null);
   const [answers, setAnswers] = useState<any[]>([]);
+  const [talasalitaanAnswers, setTalasalitaanAnswers] = useState<any[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isQRModalVisible, setQRModalVisible] = useState(false);
   const [formattedAnswers, setFormattedAnswers] = useState('');
+  const [allAnswers, setAllAnswers] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const totalQuestions = getTotalQuestions();
 
@@ -24,11 +29,68 @@ export default function ProfileScreen() {
       const userData = await getUser();
       setUser(userData);
       if (userData) {
-        const allAnswers = await getAllAnswers();
-        setAnswers(allAnswers);
-        const progressPercentage =
-          allAnswers.length > 0 ? (allAnswers.length / totalQuestions) * 100 : 0;
+        const allAnswersData = await getAllAnswers();
+        setAnswers(allAnswersData);
+        const allTalasalitaanAnswersData = await getAllTalasalitaanAnswers();
+        setTalasalitaanAnswers(allTalasalitaanAnswersData);
+        const totalAnswered = allAnswersData.length + allTalasalitaanAnswersData.length;
+        const progressPercentage = totalAnswered > 0 ? (totalAnswered / totalQuestions) * 100 : 0;
         setProgress(progressPercentage);
+
+        let readableAnswers = `User: ${userData.name}\nGrade: ${userData.grade}\nSection: ${
+          userData.section
+        }\n\n`;
+
+        if (allAnswersData.length > 0) {
+          readableAnswers += '--- Activity Answers ---\n\n';
+          const groupedAnswers = allAnswersData.reduce((acc, ans) => {
+            const activity = activityQuestions[ans.activity_id];
+            if (!activity) return acc;
+
+            if (!acc[ans.activity_id]) {
+              acc[ans.activity_id] = {
+                name: activity.name,
+                answers: [],
+              };
+            }
+            // For Pagsisiyasat-04-06, question_index can be a string key (e.g., 'case1_suspect1')
+            const questionIdentifier = isNaN(ans.question_index)
+              ? ans.question_index
+              : ans.question_index;
+
+            acc[ans.activity_id].answers.push({
+              question: questionIdentifier,
+              answer: ans.selected_answer,
+            });
+            return acc;
+          }, {});
+
+          for (const activityId in groupedAnswers) {
+            const activity = groupedAnswers[activityId];
+            readableAnswers += `Gawain: ${activity.name}\n`;
+            activity.answers.forEach((ans) => {
+              readableAnswers += `  ${ans.question} : ${ans.answer} \n`;
+            });
+            readableAnswers += '\n';
+          }
+        }
+
+        if (allTalasalitaanAnswersData.length > 0) {
+          readableAnswers += '--- Talasalitaan Answers ---\n\n';
+          allTalasalitaanAnswersData.forEach((ans) => {
+            readableAnswers += `Kabanata ${ans.chapter_id} (${ans.quiz_type}):\n`;
+            // Simplify talasalitaan answers to just key-value pairs if it's an object
+            if (typeof ans.answers === 'object' && ans.answers !== null) {
+              for (const key in ans.answers) {
+                readableAnswers += `  ${key}: ${ans.answers[key]}\n`;
+              }
+            } else {
+              readableAnswers += `${ans.answers}\n`; // Fallback for non-object answers
+            }
+            readableAnswers += '\n';
+          });
+        }
+        setAllAnswers(readableAnswers);
       }
     };
     if (isFocused) {
@@ -36,8 +98,23 @@ export default function ProfileScreen() {
     }
   }, [isFocused, totalQuestions]);
 
-  const formatAnswers = (range: '1-3' | '4-6') => {
+  const formatAnswers = (range: '1-3' | '4-6' | 'talasalitaan') => {
     let formattedString = `Nakuha ni: ${user.name}\nGrade at Seksyon: ${user.grade} - ${user.section}\n\n`;
+
+    if (range === 'talasalitaan') {
+      if (talasalitaanAnswers.length === 0) {
+        return 'Walang mga sagot para sa talasalitaan.';
+      }
+      formattedString += `--- TALASALITAAN ---\n`;
+      talasalitaanAnswers.forEach((ans) => {
+        formattedString += `Kabanata ${ans.chapter_id} (${ans.quiz_type}):\n${JSON.stringify(
+          ans.answers,
+          null,
+          2
+        )}\n\n`;
+      });
+      return formattedString;
+    }
 
     const filteredAnswers = answers.filter((ans) => {
       const answerRange = ans.activity_id.split('-').slice(1).join('-');
@@ -67,10 +144,14 @@ export default function ProfileScreen() {
     return formattedString;
   };
 
-  const handleExport = (range: '1-3' | '4-6') => {
+  const handleExport = (range: '1-3' | '4-6' | 'talasalitaan') => {
     const answersText = formatAnswers(range);
     setFormattedAnswers(answersText);
     setModalVisible(true);
+  };
+
+  const handleShowQRCode = () => {
+    setQRModalVisible(true);
   };
 
   const handleCopy = () => {
@@ -130,26 +211,25 @@ export default function ProfileScreen() {
               <View style={{ width: `${progress}%` }} className="h-4 rounded-full bg-[#3e2723]" />
             </View>
             <Text className="mt-1 text-right font-poppins text-xs text-gray-500">
-              {answers.length} out of {totalQuestions} na nasagutan
+              {answers.length + talasalitaanAnswers.length} out of {totalQuestions} na nasagutan
             </Text>
           </View>
 
-          <View className="flex-row justify-between">
-            <TouchableOpacity
-              onPress={() => handleExport('1-3')}
-              className="mr-2 mt-4 flex-1 items-center rounded-full bg-[#3e2723] py-3 shadow-lg active:opacity-80">
-              <Text className="font-poppins-bold uppercase tracking-widest text-[#e8d4b0]">
-                Gawain 1-3
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleExport('4-6')}
-              className="ml-2 mt-4 flex-1 items-center rounded-full bg-[#3e2723] py-3 shadow-lg active:opacity-80">
-              <Text className="font-poppins-bold uppercase tracking-widest text-[#e8d4b0]">
-                Gawain 4-6
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => handleExport('talasalitaan')}
+            className="mt-4 items-center rounded-full bg-[#3e2723] py-3 shadow-lg active:opacity-80">
+            <Text className="font-poppins-bold uppercase tracking-widest text-[#e8d4b0]">
+              Talasalitaan
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleShowQRCode}
+            className="mt-4 items-center rounded-full bg-[#8d6e63] py-3 shadow-lg active:opacity-80">
+            <Text className="font-poppins-bold uppercase tracking-widest text-white">
+              Ipakita ang QR
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleClearData}
@@ -160,6 +240,28 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isQRModalVisible}
+        onRequestClose={() => setQRModalVisible(false)}>
+        <View className="flex-1 items-center justify-center bg-black/50 p-8">
+          <View className="w-full max-w-lg items-center rounded-lg bg-white p-6">
+            <Text className="mb-4 font-poppins-bold text-lg">Lahat ng mga Sagot</Text>
+            {allAnswers && (
+              <View className="rounded-lg bg-white p-4">
+                <QRCode value={allAnswers} size={200} />
+              </View>
+            )}
+            <TouchableOpacity
+              onPress={() => setQRModalVisible(false)}
+              className="mt-6 rounded-full bg-[#3e2723] px-8 py-3">
+              <Text className="font-poppins-bold text-white">Isara</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         animationType="slide"
