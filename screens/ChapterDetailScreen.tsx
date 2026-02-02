@@ -31,6 +31,7 @@ export default function ChapterDetailScreen() {
 
   const [activeTab, setActiveTab] = useState<'talasalitaan' | 'nobela'>('talasalitaan');
 
+
   // --- STATE MANAGEMENT ---
 
   React.useEffect(() => {
@@ -47,6 +48,9 @@ export default function ChapterDetailScreen() {
   const [mindMapInputs, setMindMapInputs] = useState<string[]>(['', '', '', '']);
 
   // 3. Punan Mo
+  // State for storing complete answers (one per question) - THIS IS NOW THE SOURCE OF TRUTH FOR SAVING
+  const [punanAnswers, setPunanAnswers] = useState<{ [key: number]: string }>({});
+  // Keep the individual inputs for UI display
   const [punanInputs, setPunanInputs] = useState<{ [key: string]: string }>({});
   const punanInputRefs = useRef<{ [key: string]: TextInput | null }>({});
 
@@ -67,23 +71,43 @@ export default function ChapterDetailScreen() {
     React.useCallback(() => {
       const loadAnswers = async () => {
         if (chapterContent) {
-          const savedAnswers = await getTalasalitaanAnswers(id, chapterContent.quizType);
-          if (savedAnswers) {
+          const savedData = await getTalasalitaanAnswers(id, chapterContent.quizType);
+          if (savedData) {
             switch (chapterContent.quizType) {
               case 'multiple-choice':
-                setSelectedAnswers(savedAnswers);
+                setSelectedAnswers(savedData);
                 break;
               case 'mind-map':
-                setMindMapInputs(savedAnswers);
+                setMindMapInputs(savedData);
                 break;
               case 'punan-mo':
-                setPunanInputs(savedAnswers);
+                // `savedData` is the `punanAnswers` object: { [qid]: "COMPLETEWORD" }
+                const savedAnswers = savedData as { [key: number]: string };
+                setPunanAnswers(savedAnswers);
+
+                // Populate individual input fields from the complete words
+                const newPunanInputs: { [key: string]: string } = {};
+                Object.keys(savedAnswers).forEach((questionIdStr) => {
+                  const qId = parseInt(questionIdStr, 10);
+                  const savedWord = savedAnswers[qId];
+                  const question = chapterContent.quiz.find((q) => q.id === qId);
+
+                  if (question && savedWord && question.clues) {
+                    question.clues.forEach((char, idx) => {
+                      if (char === '') { // This is a blank for user input
+                        const key = `q${qId}-${idx}`;
+                        newPunanInputs[key] = savedWord[idx] || '';
+                      }
+                    });
+                  }
+                });
+                setPunanInputs(newPunanInputs);
                 break;
               case 'matching':
-                setMatches(savedAnswers);
+                setMatches(savedData);
                 break;
               case 'line-connect':
-                setConnectedPairs(savedAnswers);
+                setConnectedPairs(savedData);
                 break;
             }
           }
@@ -92,12 +116,13 @@ export default function ChapterDetailScreen() {
       loadAnswers();
     }, [id, chapterContent])
   );
-
+  
   // --- HANDLERS ---
 
   const handleSave = async () => {
     let answersToSave;
-    switch (chapterContent?.quizType) {
+    const quizType = chapterContent?.quizType;
+    switch (quizType) {
       case 'multiple-choice':
         answersToSave = selectedAnswers;
         break;
@@ -105,7 +130,8 @@ export default function ChapterDetailScreen() {
         answersToSave = mindMapInputs;
         break;
       case 'punan-mo':
-        answersToSave = punanInputs;
+        // Save the complete words object
+        answersToSave = punanAnswers;
         break;
       case 'matching':
         answersToSave = matches;
@@ -114,25 +140,18 @@ export default function ChapterDetailScreen() {
         answersToSave = connectedPairs;
         break;
       default:
+        Alert.alert('Error', 'Unknown quiz type.');
         return;
     }
-    await saveTalasalitaanAnswers(id, chapterContent!.quizType, answersToSave);
-    Alert.alert('Sagot Nai-save!', 'Ang iyong mga sagot ay nai-save na.');
+    if (quizType) {
+      await saveTalasalitaanAnswers(id, quizType, answersToSave);
+      Alert.alert('Sagot Nai-save!', 'Ang iyong mga sagot ay nai-save na.');
+    }
   };
-
-  // Multiple Choice
-  const handleSelectAnswer = (questionId: number, answer: string, correctAnswer: string) => {
-    setSelectedAnswers((prev) => ({ ...prev, [questionId]: answer }));
-  };
-
-  // Mind Map
-  const handleMindMapChange = (text: string, index: number) => {
-    const newInputs = [...mindMapInputs];
-    newInputs[index] = text;
-    setMindMapInputs(newInputs);
-  };
-
-  // Punan Mo
+  
+  // -- Punan Mo Handlers (Updated)--
+  
+  // Updated: Handle text change and update complete word
   const handlePunanTextChange = (
     text: string,
     questionId: number,
@@ -140,8 +159,27 @@ export default function ChapterDetailScreen() {
     clues: string[]
   ) => {
     const key = `q${questionId}-${charIndex}`;
-    setPunanInputs((prev) => ({ ...prev, [key]: text.toUpperCase() }));
+    const upperText = text.toUpperCase();
+    
+    // Update individual input for UI
+    const newPunanInputs = { ...punanInputs, [key]: upperText };
+    setPunanInputs(newPunanInputs);
 
+    // Build and save complete word to state
+    let completeWord = '';
+    clues.forEach((char, idx) => {
+      if (char !== '') {
+        completeWord += char;
+      } else {
+        const inputKey = `q${questionId}-${idx}`;
+        completeWord += newPunanInputs[inputKey] || '_';
+      }
+    });
+    
+    // Update complete answer state
+    setPunanAnswers(prev => ({ ...prev, [questionId]: completeWord }));
+
+    // Auto-focus next input
     if (text.length > 0) {
       let nextIndex = charIndex + 1;
       while (nextIndex < clues.length) {
@@ -155,10 +193,36 @@ export default function ChapterDetailScreen() {
     }
   };
 
-  const handlePunanKeyPress = (e: any, questionId: number, charIndex: number, clues: string[]) => {
+  // Handle backspace
+  const handlePunanKeyPress = (
+    e: any,
+    questionId: number,
+    charIndex: number,
+    clues: string[]
+  ) => {
     const key = `q${questionId}-${charIndex}`;
+    
     if (e.nativeEvent.key === 'Backspace') {
-      if (!punanInputs[key]) {
+      const currentVal = punanInputs[key];
+
+      // Clear current input first, then decide where to move
+      const newPunanInputs = { ...punanInputs, [key]: '' };
+      setPunanInputs(newPunanInputs);
+
+      // Rebuild the complete word with the cleared input
+      let completeWord = '';
+      clues.forEach((char, idx) => {
+        if (char !== '') {
+          completeWord += char;
+        } else {
+          const inputKey = `q${questionId}-${idx}`;
+          completeWord += newPunanInputs[inputKey] || '_';
+        }
+      });
+      setPunanAnswers(prev => ({ ...prev, [questionId]: completeWord }));
+
+      // If the input was already empty, then move focus to the previous input
+      if (!currentVal) {
         let prevIndex = charIndex - 1;
         while (prevIndex >= 0) {
           if (clues[prevIndex] === '') {
@@ -171,6 +235,20 @@ export default function ChapterDetailScreen() {
       }
     }
   };
+
+
+  // Multiple Choice
+  const handleSelectAnswer = (questionId: number, answer: string, correctAnswer: string) => {
+    setSelectedAnswers((prev) => ({ ...prev, [questionId]: answer }));
+  };
+
+  // Mind Map
+  const handleMindMapChange = (text: string, index: number) => {
+    const newInputs = [...mindMapInputs];
+    newInputs[index] = text;
+    setMindMapInputs(newInputs);
+  };
+
 
   // Matching Type 1
   const handleChoiceClick = (choice: string) => {

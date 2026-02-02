@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal, Easing } from 'react-native';
+import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal, Easing, ScrollView } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
 
@@ -12,42 +12,42 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
       id: 1,
       name: 'Ibarra',
       question:
-        'Batay sa kanyang kasuotan at ekspresyon, paano mo ilalarawan ang kanyang papel sa lipunang ginagalawan niya?',
+          'Batay sa kanyang kasuotan at ekspresyon, paano mo ilalarawan ang kanyang papel sa lipunang ginagalawan niya?',
       image: require('../../assets/images/ibarra.png'),
     },
     {
       id: 2,
       name: 'Maria Clara',
       question:
-        'Ano ang ipinapakita ng kanyang postura kung siya ba ay mahinhin, mahiyain, o matapang? Ipaliwanag.',
+          'Ano ang ipinapakita ng kanyang postura kung siya ba ay mahinhin, mahiyain, o matapang? Ipaliwanag.',
       image: require('../../assets/images/maria.png'),
     },
     {
       id: 3,
       name: 'Padre Damaso',
       question:
-        'Tingnan ang ekspresyon ng pari. Sa iyong palagay, siya ba ay isang prayleng mapagpakumbaba o isang taong madaling magalit? Bakit?',
+          'Tingnan ang ekspresyon ng pari. Sa iyong palagay, siya ba ay isang prayleng mapagpakumbaba o isang taong madaling magalit? Bakit?',
       image: require('../../assets/images/damaso.png'),
     },
     {
       id: 4,
       name: 'Tiya Isabel',
       question:
-        'Batay sa kanyang postura, paano mo ilalarawan ang katangian na namamayani sa kanya?',
+          'Batay sa kanyang postura, paano mo ilalarawan ang katangian na namamayani sa kanya?',
       image: require('../../assets/images/pia.png'),
     },
     {
       id: 5,
       name: 'Teniente',
       question:
-        'Ano ang maaaring ipahiwatig ng kanyang ekspresyon sa mata o mukha tungkol sa kanyang pag-iisip o damdamin?',
+          'Ano ang maaaring ipahiwatig ng kanyang ekspresyon sa mata o mukha tungkol sa kanyang pag-iisip o damdamin?',
       image: require('../../assets/images/tiago.png'),
     },
     {
       id: 6,
       name: 'Matandang Babae',
       question:
-        'Batay sa kaniyang pananamit, anong hinuha ang mabubuo mo tungkol sa kaniyang katayuan sa lipunan at ang kaniyang partikular na tungkulin sa loob ng pamilya?',
+          'Batay sa kaniyang pananamit, anong hinuha ang mabubuo mo tungkol sa kaniyang katayuan sa lipunan at ang kaniyang partikular na tungkulin sa loob ng pamilya?',
       image: require('../../assets/images/tiya.png'),
     },
   ];
@@ -62,59 +62,113 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
   const [isClawing, setIsClawing] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: string }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   // Animation values
   const clawY = useRef(new Animated.Value(0)).current;
   const clawRotate = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const characterPulse = useRef(new Animated.Value(1)).current;
+  const sparkleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     loadProgress();
     startPulseAnimation();
+    startSparkleAnimation();
   }, []);
 
   const startPulseAnimation = () => {
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.15,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+    ).start();
+  };
+
+  const startSparkleAnimation = () => {
+    Animated.loop(
+        Animated.sequence([
+          Animated.timing(sparkleAnim, {
+            toValue: 1,
+            duration: 2000,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.timing(sparkleAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
     ).start();
   };
 
   const loadProgress = async () => {
-    // Uncomment when integrating with your backend
-    // const savedAnswers = await getAnswers(activityId);
-    // const answersMap = savedAnswers.reduce((acc, item) => {
-    //   acc[item.question_index] = item.selected_answer;
-    //   return acc;
-    // }, {});
-    // setSavedAnswers(answersMap);
-    // const completedIds = Object.keys(answersMap).map(Number);
-    // setAvailableCharacters(allCharacters.filter(c => !completedIds.includes(c.id)));
-    // setCompletedCount(completedIds.length);
+    try {
+      setIsLoading(true);
+
+      // Load saved answers from database
+      const savedAnswers = await getAnswers(activityId);
+
+      // Convert array to object map
+      const answersMap = savedAnswers.reduce((acc, item) => {
+        acc[item.question_index] = item.selected_answer;
+        return acc;
+      }, {});
+
+      setSavedAnswers(answersMap);
+
+      // Get IDs of completed characters
+      const completedIds = Object.keys(answersMap).map(Number);
+
+      // Filter out completed characters from available pool
+      const remainingCharacters = allCharacters.filter(
+          c => !completedIds.includes(c.id)
+      );
+
+      setAvailableCharacters(remainingCharacters);
+      setCompletedCount(completedIds.length);
+
+      console.log('Progress loaded:', {
+        completed: completedIds.length,
+        remaining: remainingCharacters.length
+      });
+
+    } catch (error) {
+      console.error('Error loading progress:', error);
+      Alert.alert(
+          'May Error',
+          'Hindi ma-load ang iyong progress. Magsisimula mula sa umpisa.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClawClick = () => {
     if (availableCharacters.length === 0) {
-      Alert.alert('Tapos na!', 'Nakuha mo na ang lahat ng karakter!');
+      Alert.alert('🎉 Tapos na!', 'Nakuha mo na ang lahat ng karakter!');
       return;
     }
 
     if (isClawing) return;
 
     setIsClawing(true);
+
+    // Randomly select a character first
+    const randomIndex = Math.floor(Math.random() * availableCharacters.length);
+    const selected = availableCharacters[randomIndex];
 
     // Claw animation sequence
     Animated.sequence([
@@ -151,23 +205,21 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
         }),
       ]),
     ]).start(() => {
-      // Randomly select a character
-      const randomIndex = Math.floor(Math.random() * availableCharacters.length);
-      const selected = availableCharacters[randomIndex];
-
       setClawedCharacter(selected);
       setIsClawing(false);
 
       // Animate character appearance
       Animated.sequence([
-        Animated.timing(characterPulse, {
-          toValue: 1.3,
-          duration: 300,
+        Animated.spring(characterPulse, {
+          toValue: 1.2,
+          friction: 3,
+          tension: 40,
           useNativeDriver: true,
         }),
-        Animated.timing(characterPulse, {
+        Animated.spring(characterPulse, {
           toValue: 1,
-          duration: 300,
+          friction: 5,
+          tension: 40,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -178,19 +230,20 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
 
   const handleSaveAnswer = async () => {
     if (!currentAnswer.trim()) {
-      Alert.alert('Kulang', 'Mangyaring sagutin ang tanong.');
+      Alert.alert('⚠️ Kulang', 'Mangyaring sagutin ang tanong.');
       return;
     }
 
     try {
-      // Uncomment when integrating with backend
-      // const user = await getUser();
-      // if (!user) {
-      //   Alert.alert('Error', 'Hindi mahanap ang user.');
-      //   return;
-      // }
+      // Get current user (same pattern as Pagsisiyasat)
+      const user = await getUser();
+      if (!user) {
+        Alert.alert('Error', 'Hindi mahanap ang user.');
+        return;
+      }
 
-      // await saveAnswer(activityId, clawedCharacter.id, currentAnswer, false);
+      // Save answer to database (using clawedCharacter.id as question_index)
+      await saveAnswer(activityId, clawedCharacter.id, currentAnswer, false);
 
       // Update local state
       setSavedAnswers((prev) => ({
@@ -198,15 +251,18 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
         [clawedCharacter.id]: currentAnswer,
       }));
 
+      // Calculate new score (how many characters completed)
+      const newCount = completedCount + 1;
+
+      // Save score (same pattern as Pagsisiyasat)
+      await saveScore(user.id, activityId, newCount);
+
       // Remove character from available pool
       setAvailableCharacters((prev) =>
-        prev.filter((char) => char.id !== clawedCharacter.id)
+          prev.filter((char) => char.id !== clawedCharacter.id)
       );
 
-      const newCount = completedCount + 1;
       setCompletedCount(newCount);
-
-      // await saveScore(user.id, activityId, newCount);
 
       // Reset and close modal
       setCurrentAnswer('');
@@ -216,36 +272,37 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
       // Check if all completed
       if (newCount === allCharacters.length) {
         Alert.alert(
-          '🎉 Binabati kita!',
-          'Natapos mo na ang lahat ng mga karakter! Mahusay!',
-          [{ text: 'Salamat!' }]
+            'Galing!',
+            'Natapos mo na ang lahat ng mga karakter! Ang iyong mga sagot ay nai-save na.',
+            [{ text: 'OK' }]
         );
       } else {
-        Alert.alert('✓ Galing!', 'Nakuha mo ang karakter! Kumuha ng isa pa.', [
+        Alert.alert('Galing!', 'Ang sagot ay nai-save na. Kumuha ng isa pa.', [
           { text: 'Sige' },
         ]);
       }
     } catch (error) {
       Alert.alert('Error', 'May problema sa pag-save ng sagot.');
-      console.error(error);
+      console.error('Save error:', error);
     }
   };
 
   const handleSkipCharacter = () => {
     Alert.alert(
-      'Laktawan?',
-      'Sigurado ka bang gusto mong laktawan ang karakterng ito? Maaari mo pa itong makuha mamaya.',
-      [
-        { text: 'Hindi', style: 'cancel' },
-        {
-          text: 'Oo',
-          onPress: () => {
-            setCurrentAnswer('');
-            setShowQuestionModal(false);
-            setClawedCharacter(null);
+        '⏭️ Laktawan?',
+        'Sigurado ka bang gusto mong laktawan ang karakterng ito? Maaari mo pa itong makuha mamaya.',
+        [
+          { text: 'Hindi', style: 'cancel' },
+          {
+            text: 'Oo, Laktawan',
+            onPress: () => {
+              setCurrentAnswer('');
+              setShowQuestionModal(false);
+              setClawedCharacter(null);
+            },
+            style: 'destructive',
           },
-        },
-      ]
+        ]
     );
   };
 
@@ -254,221 +311,322 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
     outputRange: ['0deg', '360deg'],
   });
 
+  const sparkleRotate = sparkleAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const sparkleOpacity = sparkleAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 1, 0.3],
+  });
+
+  // Show loading state
+  if (isLoading) {
+    return (
+        <View className="flex-1 items-center justify-center pb-8">
+          <FontAwesome5 name="spinner" size={40} color="#3e2723" />
+          <Text className="mt-4 font-poppins text-base text-[#3e2723]">
+            Iniload ang iyong progress...
+          </Text>
+        </View>
+    );
+  }
+
   return (
-    <View className="flex-1 pb-8">
-      {/* Header Section */}
-      <View className="mb-6 flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <FontAwesome5 name="search" size={20} color="#3e2723" />
-          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">
-            Paghihinuha
-          </Text>
-        </View>
-        <View className="rounded-full bg-[#3e2723] px-4 py-2 shadow-md">
-          <Text className="font-poppins-bold text-sm text-white">
-            {completedCount}/{allCharacters.length}
-          </Text>
-        </View>
-      </View>
-
-      {/* Instructions */}
-      <View className="mb-4 rounded-xl bg-[#f5e6d3] p-4 shadow-sm">
-        <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
-          <Text className="font-poppins-bold">Panuto: </Text>
-          Pindutin ang pulang bilog sa gitna upang simulan ang gawain. Pagmasdan
-          ang mabuti ang anyo, pananamit, at ekspresyon ng mga karakter sa
-          larawan. Gamit ang mga detalyang ito, maghigay ng iyong hinuha tungkol
-          sa kanilang pagkatao at maaaring papel sa nobela.
-        </Text>
-      </View>
-
-      {/* Claw Machine Container */}
-      <View className="items-center rounded-2xl bg-gradient-to-b from-[#cba294] to-[#b08968] p-6 shadow-xl">
-        {/* Machine Frame */}
-        <View className="w-full rounded-t-xl border-4 border-[#3e2723] bg-[#8d6e63] p-2">
-          <View className="h-64 rounded-lg border-2 border-[#d4af37] bg-[#f5e6d3]/30">
-            {/* Claw System */}
-            <View className="absolute left-1/2 top-0 -ml-8 items-center">
-              <Animated.View
-                style={{
-                  transform: [{ translateY: clawY }, { rotate: spin }],
-                }}
-                className="items-center">
-                {/* Cable */}
-                <View className="w-1 bg-[#424242]" style={{ height: 40 }} />
-                {/* Claw mechanism */}
-                <View className="relative h-20 w-20 items-center justify-center">
-                  {/* You can replace this with an actual claw image */}
-                  <View className="h-16 w-16 items-center justify-center rounded-full bg-[#757575] shadow-lg">
-                    <FontAwesome5 name="hand-rock" size={24} color="#3e2723" />
-                  </View>
-                  {/* Grabbed character preview during animation */}
-                  {isClawing && clawY._value > 100 && clawedCharacter && (
-                    <View className="absolute -bottom-16 h-12 w-12 overflow-hidden rounded-full border-2 border-white">
-                      <Image
-                        source={clawedCharacter.image}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
-                    </View>
-                  )}
-                </View>
-              </Animated.View>
+      <View className="flex-1 pb-8">
+        {/* Header Section with improved styling */}
+        <View className="mb-6 flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <View className="rounded-full bg-[#3e2723] p-2">
+              <FontAwesome5 name="search" size={18} color="#d4af37" />
             </View>
+            <Text className="ml-3 font-serif text-2xl font-bold text-[#3e2723]">
+              Paghihinuha
+            </Text>
+          </View>
+          <View className="rounded-full bg-gradient-to-r from-[#3e2723] to-[#5d4037] px-5 py-2 shadow-lg">
+            <Text className="font-poppins-bold text-base text-white">
+              {completedCount}/{allCharacters.length}
+            </Text>
+          </View>
+        </View>
 
-            {/* Character Pool Display */}
-            <View className="absolute bottom-4 left-0 right-0 items-center">
-              <View className="flex-row flex-wrap justify-center px-4">
-                {availableCharacters.slice(0, 6).map((char, index) => (
-                  <View
-                    key={char.id}
-                    className="m-1 h-14 w-14 overflow-hidden rounded-full border-2 border-[#d4af37] bg-white shadow-md"
+        {/* Instructions with better design */}
+        <View className="mb-6 rounded-2xl border-2 border-[#d4af37] bg-gradient-to-b from-[#fff8e1] to-[#f5e6d3] p-5 shadow-md">
+          <View className="mb-2 flex-row items-center">
+            <View className="rounded-full bg-[#d4af37] p-1.5">
+              <FontAwesome5 name="info" size={12} color="#3e2723" />
+            </View>
+            <Text className="ml-2 font-poppins-bold text-sm text-[#3e2723]">
+              Panuto
+            </Text>
+          </View>
+          <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
+            Pindutin ang pulang bilog sa gitna upang simulan ang gawain. Pagmasdan
+            ang mabuti ang anyo, pananamit, at ekspresyon ng mga karakter sa
+            larawan. Gamit ang mga detalyang ito, maghigay ng iyong hinuha tungkol
+            sa kanilang pagkatao at maaaring papel sa nobela.
+          </Text>
+        </View>
+
+        {/* Enhanced Claw Machine Container */}
+        <View className="items-center rounded-3xl bg-gradient-to-b from-[#8d6e63] to-[#6d4c41] p-4 shadow-2xl">
+          {/* Machine Frame with better styling */}
+          <View className="w-full rounded-2xl border-4 border-[#3e2723] bg-gradient-to-b from-[#a1887f] to-[#8d6e63] p-3 shadow-inner">
+            <View className="overflow-hidden rounded-xl border-4 border-[#d4af37] bg-gradient-to-b from-[#e3f2fd] to-[#bbdefb]" style={{ height: 280 }}>
+              {/* Decorative sparkles */}
+              <Animated.View
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    transform: [{ rotate: sparkleRotate }],
+                    opacity: sparkleOpacity,
+                  }}>
+                <FontAwesome5 name="star" size={16} color="#ffd700" />
+              </Animated.View>
+              <Animated.View
+                  style={{
+                    position: 'absolute',
+                    top: 20,
+                    left: 15,
+                    transform: [{ rotate: sparkleRotate }],
+                    opacity: sparkleOpacity,
+                  }}>
+                <FontAwesome5 name="star" size={12} color="#ffd700" />
+              </Animated.View>
+
+              {/* Claw System with enhanced design */}
+              <View className="absolute left-1/2 top-0 -ml-10 items-center" style={{ zIndex: 10 }}>
+                <Animated.View
                     style={{
-                      opacity: isClawing ? 0.5 : 1,
-                    }}>
-                    <Image
-                      source={char.image}
-                      className="h-full w-full"
-                      resizeMode="cover"
-                    />
+                      transform: [{ translateY: clawY }, { rotate: spin }],
+                    }}
+                    className="items-center">
+                  {/* Enhanced Cable with gradient effect */}
+                  <View
+                      className="w-1.5 rounded-full bg-gradient-to-b from-[#212121] to-[#616161] shadow"
+                      style={{ height: 50 }}
+                  />
+                  {/* Enhanced Claw mechanism */}
+                  <View className="relative h-24 w-24 items-center justify-center">
+                    {/* Outer glow */}
+                    <View className="absolute h-20 w-20 rounded-full bg-[#757575]/30" />
+                    {/* Main claw body */}
+                    <View className="h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-[#9e9e9e] to-[#757575] shadow-xl">
+                      <View className="h-12 w-12 items-center justify-center rounded-full bg-[#616161]">
+                        <FontAwesome5 name="hand-rock" size={24} color="#3e2723" />
+                      </View>
+                    </View>
+                    {/* Grabbed character preview with glow effect */}
+                    {isClawing && clawY._value > 100 && clawedCharacter && (
+                        <View className="absolute -bottom-20">
+                          <View className="absolute h-16 w-16 rounded-full bg-[#ffd700]/50 blur-lg" />
+                          <View className="h-14 w-14 overflow-hidden rounded-full border-4 border-[#ffd700] bg-white shadow-xl">
+                            <Image
+                                source={clawedCharacter.image}
+                                className="h-full w-full"
+                                resizeMode="cover"
+                            />
+                          </View>
+                        </View>
+                    )}
                   </View>
-                ))}
+                </Animated.View>
+              </View>
+
+              {/* Enhanced Character Pool Display */}
+              <View className="absolute bottom-6 left-0 right-0 items-center">
+                <View className="flex-row flex-wrap justify-center px-4">
+                  {availableCharacters.map((char) => (
+                      <Animated.View
+                          key={char.id}
+                          style={{
+                            opacity: isClawing ? 0.6 : 1,
+                          }}>
+                        <View className="m-1.5 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg" style={{ height: 64, width: 64 }}>
+                          <Image
+                              source={char.image}
+                              className="h-full w-full"
+                              resizeMode="cover"
+                          />
+                          {/* Shine effect */}
+                          <View className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white/70" />
+                          {/* Character border glow */}
+                          <View className="absolute inset-0 rounded-full border-2 border-[#d4af37]/50" />
+                        </View>
+                      </Animated.View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Floor indicator with shadow */}
+              <View className="absolute bottom-0 left-0 right-0 h-4 rounded-b-xl bg-gradient-to-t from-[#3e2723] to-transparent" />
+            </View>
+          </View>
+
+          {/* Enhanced Control Panel */}
+          <View className="mt-5 w-full items-center rounded-2xl border-4 border-[#3e2723] bg-gradient-to-b from-[#8d6e63] to-[#6d4c41] p-5 shadow-lg">
+            {/* Animated Button */}
+            <Animated.View
+                style={{
+                  transform: [{ scale: isClawing ? 1 : pulseAnim }],
+                }}>
+              <TouchableOpacity
+                  onPress={handleClawClick}
+                  disabled={isClawing || availableCharacters.length === 0}
+                  className={`h-28 w-28 items-center justify-center rounded-full shadow-2xl ${
+                      isClawing
+                          ? 'bg-gradient-to-b from-orange-400 to-orange-600'
+                          : availableCharacters.length === 0
+                              ? 'bg-gradient-to-b from-gray-400 to-gray-600'
+                              : 'bg-gradient-to-b from-red-500 to-red-700'
+                  }`}
+                  style={{
+                    shadowColor: isClawing ? '#ff9800' : '#d32f2f',
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.6,
+                    shadowRadius: 10,
+                    elevation: 15,
+                  }}>
+                {/* Button inner ring */}
+                <View className="absolute inset-2 rounded-full border-4 border-white/30" />
+                <FontAwesome5
+                    name={isClawing ? 'spinner' : 'play'}
+                    size={40}
+                    color="white"
+                />
+                <Text className="mt-2 font-poppins-bold text-sm text-white shadow-sm">
+                  {isClawing ? 'KUMUHA...' : 'SIMULA'}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Enhanced Status Display */}
+            <View className="mt-5 rounded-xl bg-gradient-to-r from-[#3e2723] to-[#5d4037] px-8 py-3 shadow-md">
+              <View className="flex-row items-center">
+                <FontAwesome5 name="users" size={14} color="#d4af37" />
+                <Text className="ml-2 text-center font-poppins-bold text-sm text-white">
+                  Natitirang Karakter: {availableCharacters.length}
+                </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Control Panel */}
-        <View className="mt-4 w-full items-center rounded-b-xl border-4 border-t-0 border-[#3e2723] bg-[#8d6e63] p-4">
-          <Animated.View
-            style={{
-              transform: [{ scale: isClawing ? 1 : pulseAnim }],
-            }}>
-            <TouchableOpacity
-              onPress={handleClawClick}
-              disabled={isClawing || availableCharacters.length === 0}
-              className={`h-24 w-24 items-center justify-center rounded-full shadow-xl ${
-                isClawing
-                  ? 'bg-gray-400'
-                  : availableCharacters.length === 0
-                    ? 'bg-gray-500'
-                    : 'bg-red-600'
-              }`}
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 8,
-              }}>
-              <FontAwesome5
-                name={isClawing ? 'spinner' : 'play'}
-                size={32}
-                color="white"
-              />
-              <Text className="mt-1 font-poppins-bold text-xs text-white">
-                {isClawing ? 'KUMUHA...' : 'SIMULA'}
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
+        {/* Enhanced Question Modal */}
+        <Modal
+            visible={showQuestionModal}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={handleSkipCharacter}>
+          <View className="flex-1 items-center justify-center bg-black/80 px-4">
+            <Animated.View
+                style={{
+                  transform: [{ scale: characterPulse }],
+                }}
+                className="w-full max-w-md">
+              <View className="rounded-3xl border-4 border-[#d4af37] bg-white shadow-2xl">
+                {/* Character Header with enhanced styling */}
+                {clawedCharacter && (
+                    <>
+                      <View className="items-center rounded-t-3xl bg-gradient-to-b from-[#f5e6d3] to-white px-6 pt-6 pb-4">
+                        <View className="mb-4 overflow-hidden rounded-full border-4 border-[#d4af37] shadow-2xl" style={{ height: 120, width: 120 }}>
+                          {/* Glow effect */}
+                          <View className="absolute -inset-2 rounded-full bg-[#d4af37]/20 blur-xl" />
+                          <Image
+                              source={clawedCharacter.image}
+                              className="h-full w-full"
+                              resizeMode="cover"
+                          />
+                          {/* Shine overlay */}
+                          <View className="absolute left-2 top-2 h-8 w-8 rounded-full bg-white/60" />
+                        </View>
+                        <View className="rounded-full bg-gradient-to-r from-[#3e2723] to-[#5d4037] px-6 py-2 shadow-lg">
+                          <Text className="font-serif text-xl font-bold text-white">
+                            {clawedCharacter.name}
+                          </Text>
+                        </View>
+                      </View>
 
-          {/* Status Display */}
-          <View className="mt-4 rounded-lg bg-[#3e2723] px-6 py-2">
-            <Text className="text-center font-poppins text-xs text-white">
-              Natitirang Karakter: {availableCharacters.length}
-            </Text>
+                      <ScrollView className="max-h-96 px-6">
+                        {/* Question with enhanced design */}
+                        <View className="my-4 rounded-2xl border-2 border-[#d4af37] bg-gradient-to-b from-[#fff8e1] to-[#f5e6d3] p-4 shadow-sm">
+                          <View className="mb-3 flex-row items-center">
+                            <View className="rounded-full bg-[#d4af37] p-2">
+                              <FontAwesome5 name="question-circle" size={14} color="#3e2723" />
+                            </View>
+                            <Text className="ml-2 font-poppins-bold text-base text-[#3e2723]">
+                              Tanong:
+                            </Text>
+                          </View>
+                          <Text className="text-justify font-poppins text-sm leading-6 text-[#3e2723]">
+                            {clawedCharacter.question}
+                          </Text>
+                        </View>
+
+                        {/* Answer Input with enhanced design */}
+                        <View className="mb-4">
+                          <View className="mb-3 flex-row items-center">
+                            <View className="rounded-full bg-[#3e2723] p-2">
+                              <FontAwesome5 name="pen" size={12} color="#d4af37" />
+                            </View>
+                            <Text className="ml-2 font-poppins-bold text-base text-[#3e2723]">
+                              Iyong Sagot:
+                            </Text>
+                          </View>
+                          <TextInput
+                              className="min-h-[140px] rounded-2xl border-3 border-[#3e2723] bg-white p-4 font-poppins text-sm text-[#3e2723] shadow-sm"
+                              placeholder="Isulat ang iyong paghihinuha dito..."
+                              placeholderTextColor="#bcaaa4"
+                              multiline
+                              textAlignVertical="top"
+                              value={currentAnswer}
+                              onChangeText={setCurrentAnswer}
+                          />
+                        </View>
+                      </ScrollView>
+
+                      {/* Action Buttons with enhanced styling */}
+                      <View className="flex-row justify-between space-x-3 rounded-b-3xl bg-[#f5f5f5] px-6 py-5">
+                        <TouchableOpacity
+                            onPress={handleSkipCharacter}
+                            className="flex-1 items-center rounded-full border-3 border-[#3e2723] bg-white py-4 shadow-md"
+                            style={{
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.2,
+                              shadowRadius: 3,
+                              elevation: 5,
+                            }}>
+                          <Text className="font-poppins-bold text-base text-[#3e2723]">
+                            ⏭️ Laktawan
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleSaveAnswer}
+                            className="flex-1 flex-row items-center justify-center rounded-full bg-gradient-to-r from-[#3e2723] to-[#5d4037] py-4 shadow-lg"
+                            style={{
+                              shadowColor: '#3e2723',
+                              shadowOffset: { width: 0, height: 4 },
+                              shadowOpacity: 0.4,
+                              shadowRadius: 5,
+                              elevation: 8,
+                            }}>
+                          <FontAwesome5 name="save" size={18} color="#d4af37" />
+                          <Text className="ml-2 font-poppins-bold text-base text-white">
+                            I-save
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                )}
+              </View>
+            </Animated.View>
           </View>
-        </View>
+        </Modal>
       </View>
-
-      {/* Question Modal */}
-      <Modal
-        visible={showQuestionModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleSkipCharacter}>
-        <View className="flex-1 items-center justify-center bg-black/70 px-4">
-          <Animated.View
-            style={{
-              transform: [{ scale: characterPulse }],
-            }}
-            className="w-full max-w-md">
-            <View className="rounded-2xl bg-white p-6 shadow-2xl">
-              {/* Character Header */}
-              {clawedCharacter && (
-                <>
-                  <View className="mb-4 items-center">
-                    <View className="mb-3 h-28 w-28 overflow-hidden rounded-full border-4 border-[#d4af37] shadow-lg">
-                      <Image
-                        source={clawedCharacter.image}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View className="rounded-full bg-[#3e2723] px-4 py-1">
-                      <Text className="font-serif text-lg font-bold text-white">
-                        {clawedCharacter.name}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Question */}
-                  <View className="mb-4 rounded-xl bg-[#f5e6d3] p-4">
-                    <View className="mb-2 flex-row items-center">
-                      <FontAwesome5 name="question-circle" size={16} color="#3e2723" />
-                      <Text className="ml-2 font-poppins-bold text-sm text-[#3e2723]">
-                        Tanong:
-                      </Text>
-                    </View>
-                    <Text className="text-justify font-poppins text-sm leading-5 text-black">
-                      {clawedCharacter.question}
-                    </Text>
-                  </View>
-
-                  {/* Answer Input */}
-                  <View className="mb-4">
-                    <View className="mb-2 flex-row items-center">
-                      <FontAwesome5 name="pen" size={14} color="#3e2723" />
-                      <Text className="ml-2 font-poppins-bold text-sm text-[#3e2723]">
-                        Iyong Sagot:
-                      </Text>
-                    </View>
-                    <TextInput
-                      className="min-h-[120px] rounded-xl border-2 border-[#3e2723] bg-white p-3 font-poppins text-sm text-[#3e2723]"
-                      placeholder="Isulat ang iyong paghihinuha dito..."
-                      placeholderTextColor="#bcaaa4"
-                      multiline
-                      textAlignVertical="top"
-                      value={currentAnswer}
-                      onChangeText={setCurrentAnswer}
-                    />
-                  </View>
-
-                  {/* Action Buttons */}
-                  <View className="flex-row justify-between space-x-2">
-                    <TouchableOpacity
-                      onPress={handleSkipCharacter}
-                      className="flex-1 items-center rounded-full border-2 border-[#3e2723] bg-white py-3 shadow-sm">
-                      <Text className="font-poppins-bold text-[#3e2723]">
-                        Laktawan
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleSaveAnswer}
-                      className="flex-1 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3 shadow-md">
-                      <FontAwesome5 name="save" size={16} color="white" />
-                      <Text className="ml-2 font-poppins-bold text-white">
-                        I-save
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
-          </Animated.View>
-        </View>
-      </Modal>
-    </View>
   );
 };
 
