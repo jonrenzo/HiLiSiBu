@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal, Easing } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
 
@@ -7,14 +7,13 @@ import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
 // 1. PAGHIHINUHA (Inference) - Character Analysis (Kabanata 1-3)
 // ==================================================
 export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
-  // Data derived from the screenshot text
-  const characters = [
+  const allCharacters = [
     {
       id: 1,
       name: 'Ibarra',
       question:
         'Batay sa kanyang kasuotan at ekspresyon, paano mo ilalarawan ang kanyang papel sa lipunang ginagalawan niya?',
-      image: require('../../assets/images/ibarra.png'), // Make sure this file exists!
+      image: require('../../assets/images/ibarra.png'),
     },
     {
       id: 2,
@@ -53,93 +52,422 @@ export const Paghihinuha = ({ rangeId }: { rangeId: string }) => {
     },
   ];
 
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const activityId = `paghihinuha-${rangeId}`;
 
-  useEffect(() => {
-    const loadAnswers = async () => {
-      const savedAnswers = await getAnswers(activityId);
-      const answersMap = savedAnswers.reduce((acc, item) => {
-        acc[item.question_index] = item.selected_answer;
-        return acc;
-      }, {});
-      setAnswers(answersMap);
-    };
-    loadAnswers();
-  }, [activityId]);
+  // State management
+  const [availableCharacters, setAvailableCharacters] = useState(allCharacters);
+  const [clawedCharacter, setClawedCharacter] = useState(null);
+  const [currentAnswer, setCurrentAnswer] = useState('');
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [isClawing, setIsClawing] = useState(false);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: string }>({});
 
-  const handleAnswerChange = (id: number, text: string) => {
-    setAnswers((prev) => ({ ...prev, [id]: text }));
+  // Animation values
+  const clawY = useRef(new Animated.Value(0)).current;
+  const clawRotate = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const characterPulse = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    loadProgress();
+    startPulseAnimation();
+  }, []);
+
+  const startPulseAnimation = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   };
 
-  const handleSave = async () => {
-    const user = await getUser();
-    if (!user) {
-      Alert.alert('Error', 'Hindi mahanap ang user.');
+  const loadProgress = async () => {
+    // Uncomment when integrating with your backend
+    // const savedAnswers = await getAnswers(activityId);
+    // const answersMap = savedAnswers.reduce((acc, item) => {
+    //   acc[item.question_index] = item.selected_answer;
+    //   return acc;
+    // }, {});
+    // setSavedAnswers(answersMap);
+    // const completedIds = Object.keys(answersMap).map(Number);
+    // setAvailableCharacters(allCharacters.filter(c => !completedIds.includes(c.id)));
+    // setCompletedCount(completedIds.length);
+  };
+
+  const handleClawClick = () => {
+    if (availableCharacters.length === 0) {
+      Alert.alert('Tapos na!', 'Nakuha mo na ang lahat ng karakter!');
       return;
     }
 
-    let score = 0;
+    if (isClawing) return;
 
-    for (const char of characters) {
-      const answer = answers[char.id];
-      if (answer) {
-        await saveAnswer(activityId, char.id, answer, false);
-        score++;
-      }
-    }
+    setIsClawing(true);
 
-    await saveScore(user.id, activityId, score);
-    Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+    // Claw animation sequence
+    Animated.sequence([
+      // Move down
+      Animated.parallel([
+        Animated.timing(clawY, {
+          toValue: 200,
+          duration: 1500,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(clawRotate, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+      // Grab pause
+      Animated.delay(500),
+      // Move up with character
+      Animated.parallel([
+        Animated.timing(clawY, {
+          toValue: 0,
+          duration: 1500,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(clawRotate, {
+          toValue: 0,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start(() => {
+      // Randomly select a character
+      const randomIndex = Math.floor(Math.random() * availableCharacters.length);
+      const selected = availableCharacters[randomIndex];
+
+      setClawedCharacter(selected);
+      setIsClawing(false);
+
+      // Animate character appearance
+      Animated.sequence([
+        Animated.timing(characterPulse, {
+          toValue: 1.3,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(characterPulse, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowQuestionModal(true);
+      });
+    });
   };
 
+  const handleSaveAnswer = async () => {
+    if (!currentAnswer.trim()) {
+      Alert.alert('Kulang', 'Mangyaring sagutin ang tanong.');
+      return;
+    }
+
+    try {
+      // Uncomment when integrating with backend
+      // const user = await getUser();
+      // if (!user) {
+      //   Alert.alert('Error', 'Hindi mahanap ang user.');
+      //   return;
+      // }
+
+      // await saveAnswer(activityId, clawedCharacter.id, currentAnswer, false);
+
+      // Update local state
+      setSavedAnswers((prev) => ({
+        ...prev,
+        [clawedCharacter.id]: currentAnswer,
+      }));
+
+      // Remove character from available pool
+      setAvailableCharacters((prev) =>
+        prev.filter((char) => char.id !== clawedCharacter.id)
+      );
+
+      const newCount = completedCount + 1;
+      setCompletedCount(newCount);
+
+      // await saveScore(user.id, activityId, newCount);
+
+      // Reset and close modal
+      setCurrentAnswer('');
+      setShowQuestionModal(false);
+      setClawedCharacter(null);
+
+      // Check if all completed
+      if (newCount === allCharacters.length) {
+        Alert.alert(
+          '🎉 Binabati kita!',
+          'Natapos mo na ang lahat ng mga karakter! Mahusay!',
+          [{ text: 'Salamat!' }]
+        );
+      } else {
+        Alert.alert('✓ Galing!', 'Nakuha mo ang karakter! Kumuha ng isa pa.', [
+          { text: 'Sige' },
+        ]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'May problema sa pag-save ng sagot.');
+      console.error(error);
+    }
+  };
+
+  const handleSkipCharacter = () => {
+    Alert.alert(
+      'Laktawan?',
+      'Sigurado ka bang gusto mong laktawan ang karakterng ito? Maaari mo pa itong makuha mamaya.',
+      [
+        { text: 'Hindi', style: 'cancel' },
+        {
+          text: 'Oo',
+          onPress: () => {
+            setCurrentAnswer('');
+            setShowQuestionModal(false);
+            setClawedCharacter(null);
+          },
+        },
+      ]
+    );
+  };
+
+  const spin = clawRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
-    <View className="pb-8">
+    <View className="flex-1 pb-8">
       {/* Header Section */}
-      <View className="mb-6 flex-row items-center">
-        <FontAwesome5 name="search" size={20} color="#3e2723" />
-        <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Paghihinuha</Text>
+      <View className="mb-6 flex-row items-center justify-between">
+        <View className="flex-row items-center">
+          <FontAwesome5 name="search" size={20} color="#3e2723" />
+          <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">
+            Paghihinuha
+          </Text>
+        </View>
+        <View className="rounded-full bg-[#3e2723] px-4 py-2 shadow-md">
+          <Text className="font-poppins-bold text-sm text-white">
+            {completedCount}/{allCharacters.length}
+          </Text>
+        </View>
       </View>
 
-      {/* Main Content Area - Gradient-like background */}
-      <View className="shadow-inner rounded-2xl bg-[#cba294] p-4">
-        {characters.map((char) => (
-          <View key={char.id} className="mb-6 flex-row items-center">
-            {/* Left: Character Portrait (Circle with Gold Border) */}
-            <View className="mr-3 h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-[#d4af37] bg-gray-300 shadow-md">
-              {/* Image with fallback */}
-              <Image
-                source={char.image}
-                className="h-full w-full"
-                resizeMode="cover"
-                defaultSource={{ uri: 'https://via.placeholder.com/150' }} // Prevents crash if image missing
-              />
+      {/* Instructions */}
+      <View className="mb-4 rounded-xl bg-[#f5e6d3] p-4 shadow-sm">
+        <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
+          <Text className="font-poppins-bold">Panuto: </Text>
+          Pindutin ang pulang bilog sa gitna upang simulan ang gawain. Pagmasdan
+          ang mabuti ang anyo, pananamit, at ekspresyon ng mga karakter sa
+          larawan. Gamit ang mga detalyang ito, maghigay ng iyong hinuha tungkol
+          sa kanilang pagkatao at maaaring papel sa nobela.
+        </Text>
+      </View>
+
+      {/* Claw Machine Container */}
+      <View className="items-center rounded-2xl bg-gradient-to-b from-[#cba294] to-[#b08968] p-6 shadow-xl">
+        {/* Machine Frame */}
+        <View className="w-full rounded-t-xl border-4 border-[#3e2723] bg-[#8d6e63] p-2">
+          <View className="h-64 rounded-lg border-2 border-[#d4af37] bg-[#f5e6d3]/30">
+            {/* Claw System */}
+            <View className="absolute left-1/2 top-0 -ml-8 items-center">
+              <Animated.View
+                style={{
+                  transform: [{ translateY: clawY }, { rotate: spin }],
+                }}
+                className="items-center">
+                {/* Cable */}
+                <View className="w-1 bg-[#424242]" style={{ height: 40 }} />
+                {/* Claw mechanism */}
+                <View className="relative h-20 w-20 items-center justify-center">
+                  {/* You can replace this with an actual claw image */}
+                  <View className="h-16 w-16 items-center justify-center rounded-full bg-[#757575] shadow-lg">
+                    <FontAwesome5 name="hand-rock" size={24} color="#3e2723" />
+                  </View>
+                  {/* Grabbed character preview during animation */}
+                  {isClawing && clawY._value > 100 && clawedCharacter && (
+                    <View className="absolute -bottom-16 h-12 w-12 overflow-hidden rounded-full border-2 border-white">
+                      <Image
+                        source={clawedCharacter.image}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                    </View>
+                  )}
+                </View>
+              </Animated.View>
             </View>
 
-            {/* Right: Question Bubble */}
-            <View className="relative flex-1 rounded-xl border border-[#3e2723] bg-white p-3 shadow-sm">
-              <Text className="mb-4 text-justify font-poppins text-[10px] leading-4 text-black">
-                {char.question}
-              </Text>
-
-              {/* Answer Line */}
-              <TextInput
-                className="border-b-2 border-black py-0 font-poppins text-xs text-[#3e2723]"
-                placeholder="Isulat ang sagot..."
-                placeholderTextColor="#bcaaa4"
-                onChangeText={(text) => handleAnswerChange(char.id, text)}
-                value={answers[char.id] || ''}
-              />
+            {/* Character Pool Display */}
+            <View className="absolute bottom-4 left-0 right-0 items-center">
+              <View className="flex-row flex-wrap justify-center px-4">
+                {availableCharacters.slice(0, 6).map((char, index) => (
+                  <View
+                    key={char.id}
+                    className="m-1 h-14 w-14 overflow-hidden rounded-full border-2 border-[#d4af37] bg-white shadow-md"
+                    style={{
+                      opacity: isClawing ? 0.5 : 1,
+                    }}>
+                    <Image
+                      source={char.image}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
-        ))}
-        <TouchableOpacity
-          onPress={handleSave}
-          className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
-          <FontAwesome5 name="save" size={16} color="white" />
-          <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
-        </TouchableOpacity>
+        </View>
+
+        {/* Control Panel */}
+        <View className="mt-4 w-full items-center rounded-b-xl border-4 border-t-0 border-[#3e2723] bg-[#8d6e63] p-4">
+          <Animated.View
+            style={{
+              transform: [{ scale: isClawing ? 1 : pulseAnim }],
+            }}>
+            <TouchableOpacity
+              onPress={handleClawClick}
+              disabled={isClawing || availableCharacters.length === 0}
+              className={`h-24 w-24 items-center justify-center rounded-full shadow-xl ${
+                isClawing
+                  ? 'bg-gray-400'
+                  : availableCharacters.length === 0
+                    ? 'bg-gray-500'
+                    : 'bg-red-600'
+              }`}
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 8,
+              }}>
+              <FontAwesome5
+                name={isClawing ? 'spinner' : 'play'}
+                size={32}
+                color="white"
+              />
+              <Text className="mt-1 font-poppins-bold text-xs text-white">
+                {isClawing ? 'KUMUHA...' : 'SIMULA'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Status Display */}
+          <View className="mt-4 rounded-lg bg-[#3e2723] px-6 py-2">
+            <Text className="text-center font-poppins text-xs text-white">
+              Natitirang Karakter: {availableCharacters.length}
+            </Text>
+          </View>
+        </View>
       </View>
+
+      {/* Question Modal */}
+      <Modal
+        visible={showQuestionModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleSkipCharacter}>
+        <View className="flex-1 items-center justify-center bg-black/70 px-4">
+          <Animated.View
+            style={{
+              transform: [{ scale: characterPulse }],
+            }}
+            className="w-full max-w-md">
+            <View className="rounded-2xl bg-white p-6 shadow-2xl">
+              {/* Character Header */}
+              {clawedCharacter && (
+                <>
+                  <View className="mb-4 items-center">
+                    <View className="mb-3 h-28 w-28 overflow-hidden rounded-full border-4 border-[#d4af37] shadow-lg">
+                      <Image
+                        source={clawedCharacter.image}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                    </View>
+                    <View className="rounded-full bg-[#3e2723] px-4 py-1">
+                      <Text className="font-serif text-lg font-bold text-white">
+                        {clawedCharacter.name}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Question */}
+                  <View className="mb-4 rounded-xl bg-[#f5e6d3] p-4">
+                    <View className="mb-2 flex-row items-center">
+                      <FontAwesome5 name="question-circle" size={16} color="#3e2723" />
+                      <Text className="ml-2 font-poppins-bold text-sm text-[#3e2723]">
+                        Tanong:
+                      </Text>
+                    </View>
+                    <Text className="text-justify font-poppins text-sm leading-5 text-black">
+                      {clawedCharacter.question}
+                    </Text>
+                  </View>
+
+                  {/* Answer Input */}
+                  <View className="mb-4">
+                    <View className="mb-2 flex-row items-center">
+                      <FontAwesome5 name="pen" size={14} color="#3e2723" />
+                      <Text className="ml-2 font-poppins-bold text-sm text-[#3e2723]">
+                        Iyong Sagot:
+                      </Text>
+                    </View>
+                    <TextInput
+                      className="min-h-[120px] rounded-xl border-2 border-[#3e2723] bg-white p-3 font-poppins text-sm text-[#3e2723]"
+                      placeholder="Isulat ang iyong paghihinuha dito..."
+                      placeholderTextColor="#bcaaa4"
+                      multiline
+                      textAlignVertical="top"
+                      value={currentAnswer}
+                      onChangeText={setCurrentAnswer}
+                    />
+                  </View>
+
+                  {/* Action Buttons */}
+                  <View className="flex-row justify-between space-x-2">
+                    <TouchableOpacity
+                      onPress={handleSkipCharacter}
+                      className="flex-1 items-center rounded-full border-2 border-[#3e2723] bg-white py-3 shadow-sm">
+                      <Text className="font-poppins-bold text-[#3e2723]">
+                        Laktawan
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleSaveAnswer}
+                      className="flex-1 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3 shadow-md">
+                      <FontAwesome5 name="save" size={16} color="white" />
+                      <Text className="ml-2 font-poppins-bold text-white">
+                        I-save
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };

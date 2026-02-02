@@ -410,38 +410,39 @@ export default function ChapterDetailScreen() {
                                   ))}
                                 </Text>
                               </View>
-                              <View className="flex-row flex-wrap justify-center gap-[2px]">
+                              <View className="flex-row flex-wrap justify-center gap-[1px]">
                                 {item.clues!.map((char, charIdx) => {
                                   const isPreFilled = char !== '';
                                   const inputKey = `q${item.id}-${charIdx}`;
                                   return (
-                                    <View
-                                      key={charIdx}
-                                      className={`h-6 w-5 items-center justify-center border border-ink ${isPreFilled ? 'bg-[#f5c170]' : 'bg-[#e8d4b0]'}`}>
-                                      {isPreFilled ? (
-                                        <Text className="font-poppins-bold text-xs text-ink">
-                                          {char}
-                                        </Text>
-                                      ) : (
-                                        <TextInput
-                                          ref={(el) => (punanInputRefs.current[inputKey] = el)}
-                                          className="h-full w-full p-0 text-center font-poppins-bold text-xs text-ink"
-                                          maxLength={1}
-                                          value={punanInputs[inputKey] || ''}
-                                          onChangeText={(text) =>
-                                            handlePunanTextChange(
-                                              text,
-                                              item.id,
-                                              charIdx,
-                                              item.clues!
-                                            )
-                                          }
-                                          onKeyPress={(e) =>
-                                            handlePunanKeyPress(e, item.id, charIdx, item.clues!)
-                                          }
-                                        />
-                                      )}
-                                    </View>
+                                      <View
+                                          key={charIdx}
+                                          // Updated: Removed box border/bg, added bottom border, reduced width
+                                          className="h-6 w-4 items-center justify-center border-b border-ink">
+                                        {isPreFilled ? (
+                                            <Text className="font-poppins-bold text-xs text-ink">
+                                              {char}
+                                            </Text>
+                                        ) : (
+                                            <TextInput
+                                                ref={(el) => (punanInputRefs.current[inputKey] = el)}
+                                                className="h-full w-full p-0 text-center font-poppins-bold text-xs text-ink"
+                                                maxLength={1}
+                                                value={punanInputs[inputKey] || ''}
+                                                onChangeText={(text) =>
+                                                    handlePunanTextChange(
+                                                        text,
+                                                        item.id,
+                                                        charIdx,
+                                                        item.clues!
+                                                    )
+                                                }
+                                                onKeyPress={(e) =>
+                                                    handlePunanKeyPress(e, item.id, charIdx, item.clues!)
+                                                }
+                                            />
+                                        )}
+                                      </View>
                                   );
                                 })}
                               </View>

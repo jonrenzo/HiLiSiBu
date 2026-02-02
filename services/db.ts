@@ -231,6 +231,7 @@ export const clearAllData = async () => {
   await db.runAsync('DELETE FROM activity_answers');
   await db.runAsync('DELETE FROM scores');
   await db.runAsync('DELETE FROM chapter_progress');
+  await db.runAsync('DELETE FROM talasalitaan_answers');
   console.log('All user data has been cleared.');
 };
 
