@@ -3,9 +3,16 @@ import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Clipboard } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, CommonActions, useIsFocused } from '@react-navigation/native';
-import { getUser, getAllAnswers, clearAllData, getAllTalasalitaanAnswers } from '../services/db';
+import {
+  getUser,
+  getAllAnswers,
+  clearAllData,
+  getAllTalasalitaanAnswers,
+  getReadChapters,
+} from '../services/db';
 import QRCode from 'react-native-qrcode-svg';
 import { activityQuestions } from '../data/questions';
+import { chaptersData } from '../data/chaptersData';
 
 const getTotalQuestions = () => {
   return 36 + 26; // 36 from activities + 26 from talasalitaan
@@ -22,12 +29,20 @@ export default function ProfileScreen() {
   const [formattedAnswers, setFormattedAnswers] = useState('');
   const [allAnswers, setAllAnswers] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [readProgress, setReadProgress] = useState({ read: 0, total: 0 });
+
   const totalQuestions = getTotalQuestions();
 
   useEffect(() => {
     const loadData = async () => {
       const userData = await getUser();
       setUser(userData);
+
+      // Chapter Read Progress
+      const readChaptersList = await getReadChapters();
+      const totalChapters = chaptersData.length;
+      setReadProgress({ read: readChaptersList.length, total: totalChapters });
+
       if (userData) {
         const allAnswersData = await getAllAnswers();
         setAnswers(allAnswersData);
@@ -37,9 +52,7 @@ export default function ProfileScreen() {
         const progressPercentage = totalAnswered > 0 ? (totalAnswered / totalQuestions) * 100 : 0;
         setProgress(progressPercentage);
 
-        let readableAnswers = `User: ${userData.name}\nGrade: ${userData.grade}\nSection: ${
-          userData.section
-        }\n\n`;
+        let readableAnswers = `User: ${userData.name}\nGrade: ${userData.grade}\nSection: ${userData.section}\n\n`;
 
         if (allAnswersData.length > 0) {
           readableAnswers += '--- Activity Answers ---\n\n';
@@ -206,7 +219,22 @@ export default function ProfileScreen() {
           </View>
 
           <View className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <Text className="mb-2 font-poppins-bold text-[#4a342e]">Aking Progreso</Text>
+            <Text className="mb-2 font-poppins-bold text-[#4a342e]">Nabasa na Kabanata</Text>
+            <View className="h-4 w-full rounded-full bg-gray-200">
+              <View
+                style={{
+                  width: `${readProgress.total > 0 ? (readProgress.read / readProgress.total) * 100 : 0}%`,
+                }}
+                className="h-4 rounded-full bg-[#3e2723]"
+              />
+            </View>
+            <Text className="mt-1 text-right font-poppins text-xs text-gray-500">
+              {readProgress.read} out of {readProgress.total} na kabanata ang nabasa
+            </Text>
+          </View>
+
+          <View className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <Text className="mb-2 font-poppins-bold text-[#4a342e]">Aking Progreso (Gawain)</Text>
             <View className="h-4 w-full rounded-full bg-gray-200">
               <View style={{ width: `${progress}%` }} className="h-4 rounded-full bg-[#3e2723]" />
             </View>

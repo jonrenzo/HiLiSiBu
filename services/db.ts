@@ -297,3 +297,17 @@ export const areChaptersRead = async (chapterIds: number[]): Promise<boolean> =>
     return false;
   }
 };
+
+// 3. Get all read chapter IDs
+export const getReadChapters = async (): Promise<number[]> => {
+  try {
+    const db = await getDB();
+    const results = await db.getAllAsync<{ chapter_id: number }>(
+      'SELECT chapter_id FROM chapter_progress WHERE is_read = 1'
+    );
+    return results.map((row) => row.chapter_id);
+  } catch (error) {
+    console.error('Error getting read chapters:', error);
+    return [];
+  }
+};

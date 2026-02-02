@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { getReadChapters } from '../services/db';
 
 const chapters = [
   {
@@ -55,9 +56,19 @@ const chapters = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [readChapters, setReadChapters] = useState<number[]>([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchReadChapters = async () => {
+        const chapters = await getReadChapters();
+        setReadChapters(chapters);
+      };
+      fetchReadChapters();
+    }, [])
+  );
 
   const handleRead = (chapter: (typeof chapters)[0]) => {
-    // 2. Navigate to ChapterDetail with params
     navigation.navigate('ChapterDetail', {
       id: chapter.id,
       title: chapter.title,
@@ -86,37 +97,50 @@ export default function HomeScreen() {
           className="flex-1 px-5 pt-6"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}>
-          {chapters.map((chapter) => (
-            <View key={chapter.id} className="mb-8 bg-transparent">
-              {/* Chapter Image Card */}
-              <View className="mb-3 h-40 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-300 shadow-sm">
-                <Image source={chapter.image} className="h-full w-full" resizeMode="cover" />
-              </View>
+          {chapters.map((chapter) => {
+            const isRead = readChapters.includes(chapter.id);
+            return (
+              <View key={chapter.id} className="mb-8 bg-transparent">
+                {/* Chapter Image Card */}
+                <View className="mb-3 h-40 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-300 shadow-sm">
+                  <Image source={chapter.image} className="h-full w-full" resizeMode="cover" />
+                  {isRead && (
+                    <View className="absolute right-2 top-2 h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-[#4f2b21]">
+                      <FontAwesome5 name="check" size={20} color="#97EF4B" />
+                    </View>
+                  )}
+                </View>
 
-              {/* Chapter Tag (e.g. KABANATA I) */}
-              <View className="mb-1 self-start rounded-sm bg-[#4e342e] px-3 py-1">
-                <Text className="font-poppins text-[10px] font-bold uppercase tracking-widest text-[#e8d4b0]">
-                  {chapter.tag}
+                {/* Chapter Tag (e.g. KABANATA I) */}
+                <View className="mb-1 self-start rounded-sm bg-[#4e342e] px-3 py-1">
+                  <Text className="font-poppins text-[10px] font-bold uppercase tracking-widest text-[#e8d4b0]">
+                    {chapter.tag}
+                  </Text>
+                </View>
+
+                {/* Chapter Title */}
+                <Text className="mb-3 font-poppins-bold text-2xl leading-tight text-black">
+                  {chapter.title}
                 </Text>
+
+                {/* Action Button */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => handleRead(chapter)}
+                  className={`flex-row items-center justify-center rounded-full py-3 shadow-md active:opacity-90 ${isRead ? 'bg-[#5d4037]' : 'bg-[#4f2b21]'}`}>
+                  <Ionicons
+                    name={isRead ? 'book' : 'book-outline'}
+                    size={18}
+                    color="#FFFFFF"
+                    className="px-2"
+                  />
+                  <Text className="font-poppins-bold text-sm tracking-wide text-white">
+                    {isRead ? 'Basahin Muli at Sagutin' : 'Basahin at Sagutin ang Nobela'}
+                  </Text>
+                </TouchableOpacity>
               </View>
-
-              {/* Chapter Title */}
-              <Text className="mb-3 font-poppins-bold text-2xl leading-tight text-black">
-                {chapter.title}
-              </Text>
-
-              {/* Action Button */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => handleRead(chapter)}
-                className="flex-row items-center justify-center rounded-full bg-[#4f2b21] py-3 shadow-md active:opacity-90">
-                <Ionicons name="book-outline" size={18} color="#FFFFFF" className="px-2" />
-                <Text className="font-poppins-bold text-sm tracking-wide text-white">
-                  Basahin at Sagutin ang Nobela
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       </View>
 
