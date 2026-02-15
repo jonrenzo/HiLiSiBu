@@ -1241,7 +1241,7 @@
       }
   
       await saveScore(user.id, activityId, score);
-      Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+      Alert.alert('Mahusay!', 'Ang iyong mga sagot ay nai-save na.');
     };
   
     return (
@@ -1364,7 +1364,7 @@
       await saveAnswer(activityId, 1, summary, false);
       await saveScore(user.id, activityId, score);
   
-      Alert.alert('Galing!', 'Ang iyong buod ay nai-save na.');
+      Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
     };
   
     return (
@@ -1517,7 +1517,7 @@
       }
   
       await saveScore(user.id, activityId, score);
-      Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+      Alert.alert('Mahusay!', 'Ang iyong mga sagot ay nai-save na.');
     };
   
     return (
@@ -2071,7 +2071,7 @@
       }
   
       await saveScore(user.id, activityId, score);
-      Alert.alert('Galing!', 'Ang iyong mga sagot ay nai-save na.');
+      Alert.alert('Mahusay!', 'Ang iyong mga sagot ay nai-save na.');
     };
   
     return (
@@ -2288,7 +2288,7 @@
       await saveAnswer(activityId, 1, summary, false);
       await saveScore(user.id, activityId, score);
   
-      Alert.alert('Galing!', 'Ang iyong buod ay nai-save na.');
+      Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
     };
   
     return (
