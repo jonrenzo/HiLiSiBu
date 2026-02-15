@@ -365,8 +365,7 @@ export default function ChapterDetailScreen() {
                       </Text>
                       <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-ink opacity-80">
                         <Text className="font-bold">Panuto: </Text>
-                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinaka
-                        angkop na kasingkahulugan.
+                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinakaangkop na kasingkahulugan.
                       </Text>
                       {chapterContent.quiz.map((item, index) => (
                         <View key={item.id} className="mb-8">
@@ -411,7 +410,7 @@ export default function ChapterDetailScreen() {
                         Buuin ang Diwa
                       </Text>
                       <Text className="mb-6 px-4 text-center font-poppins text-xs text-ink opacity-70">
-                        Isulat sa bawat hugis and unang salitang pumasok sa iyong isipan na may
+                        Isulat sa bawat hugis ang unang salitang pumasok sa iyong isipan na may
                         kaugnayan sa salitang nasa gitna.
                       </Text>
 
@@ -448,7 +447,7 @@ export default function ChapterDetailScreen() {
                       </View>
 
                       <Text className="mt-2 w-full border-t border-ink/20 pt-4 text-justify font-poppins text-xs leading-5 text-ink">
-                        <Text className="font-bold">Hint: </Text>
+                        <Text className="font-bold">Pahiwatig: </Text>
                         {chapterContent.quiz[0].hint}
                       </Text>
                     </View>

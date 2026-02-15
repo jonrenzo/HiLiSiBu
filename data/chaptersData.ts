@@ -37,7 +37,7 @@ export const chaptersData: Chapter[] = [
 
 Ang paanyaya ay madaling kumalat sa lahat ng sulok ng Maynila. Bawat isa ay gustong dumalo sapagkat ang mayamang kapitan ay kilala bilang isang mabuting tao, mapagbigay at laging bukas ang palad sa mga nangangailangan. 
 
-Dahil dito, ang iba ay naba-balino kung ano ang isusuot at sasabihin sa mismong araw ng handaan. Nang gabing iyon dagsa ang mga panauhin na gaya ng dapat asahan. Puno ang bulwagan. Ang nag-iistima sa mga bisita ay si Tiya Isabel, isang matandang babae na pinsan ng may-bahay. 
+Dahil dito, ang iba ay nababalino kung ano ang isusuot at sasabihin sa mismong araw ng handaan. Nang gabing iyon dagsa ang mga panauhin na gaya ng dapat asahan. Puno ang bulwagan. Ang nag-iistima sa mga bisita ay si Tiya Isabel, isang matandang babae na pinsan ng may-bahay. 
 
 Kabilang sa mga bisita sina tenyente ng guardia civil, Padre Sibyla, ang kura paroko ng Binundok, si Padre Damaso na madaldal at mahahayap ang mga salita at dalawang paisano. Ang isa ay kararating lamang sa Pilipinas.
 
@@ -57,17 +57,17 @@ Iniwanan na ni Tenyente ang umpukan, pagka-tapos nitong makapagpaliwanag. Sinika
     quiz: [
       {
         id: 1,
-        question: 'Tila nababalino na sa napakaraming gawain sa paaralan si Cheska.',
-        wordToDefine: 'nababalino',
-        options: ['Naguguluhan', 'Nalulungkot', 'Nalilinaw', 'Nababahala'],
-        correct: 'Naguguluhan',
+        question: 'Nababalino ang mga tao dahil sa malakas na lindol kanina.',
+        wordToDefine: 'Nababalino',
+        options: ['Naguguluhan', 'Nalulungkot', 'Nalilinaw', 'Nababalisa'],
+        correct: 'Nababalisa',
       },
       {
         id: 2,
-        question: 'Mahahayap ang asal ng sinumang nagkakalat ng maling balita.',
-        wordToDefine: 'Mahahayap',
-        options: ['Magiliw', 'Mabagsik', 'Mahinahon', 'Magaspang'],
-        correct: 'Magaspang',
+        question: 'Dahil sa kanyang mahayap na pananalita, nawalan siya ng mga kaibigan.',
+        wordToDefine: 'mahahayap',
+        options: ['Magiliw', 'Mapanakit', 'Mahinahon', 'Magaspang'],
+        correct: 'Mapanakit',
       },
       {
         id: 3,
@@ -82,7 +82,7 @@ Iniwanan na ni Tenyente ang umpukan, pagka-tapos nitong makapagpaliwanag. Sinika
         question:
           'Sa harap ng maraming tao, nilibak siya ng mga kaklase dahil sa kanyang pagkakamali.',
         wordToDefine: 'nilibak',
-        options: ['Sinaktan', 'Tinukso', 'Tinawanan', 'Iniwanan'],
+        options: ['Sinaktan', 'Minaliit', 'Tinawanan', 'Iniwanan'],
         correct: 'Tinawanan',
       },
       {
@@ -145,19 +145,19 @@ Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niy
       {
         id: 1,
         question:
-          'Sa bahay, ang bunso ang madalas na pinagsisikaran ng mga kapatid kapag may problema.',
+          'Ang pinagsisikaran ng mga mamamayan ay ang pagpapatupad ng bagong batas sa kanilang barangay.',
         wordToDefine: 'pinagsisikaran',
-        correct: 'PAGIINITAN', // Answer: PAG-IINITAN (simplified to PAGIINITAN for boxes)
+        correct: 'PAGIINITAN',
         // Visual Clues based on your image: P A _ _ _ _ _ _ T N
-        clues: ['P', '', '', 'A', '', '-', '', '', '', '', 'T', '', 'N'],
+        clues: ['P', '', 'G', '', 'U', '', 'O', 'L'],
       },
       {
         id: 2,
-        question: 'Nadumihan ang kola ng saya ni Maria habang siya ay naglalakad sa putikan.',
+        question: 'Humanga ang lahat sa mahabang kola ng kanyang damit na may magandang disenyo.',
         wordToDefine: 'kola',
         correct: 'DULO',
         // Visual Clues: D _ _ O
-        clues: ['D', '', '', 'O'],
+        clues: ['L','','Y','L','','Y','A',''],
       },
       {
         id: 3,
@@ -178,11 +178,11 @@ Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niy
       },
       {
         id: 5,
-        question: 'Noong panahon ng Espanyol, tinawag na Indiyo ang mga katutubong Pilipino.',
+        question: 'Noong panahon ng kolonyalismong Kastila, maraming Indio ang napilitang magtrabaho sa hacienda.',
         wordToDefine: 'Indiyo',
         correct: 'MANGMANG',
         // Visual Clues: M _ N _ M _ N _
-        clues: ['M', '', 'N', '', 'M', '', 'N', ''],
+        clues: ['K','A','','U','T','','B','','N', 'G', '-','P','','L','','P','','N',''],
       },
     ],
   },
@@ -193,7 +193,7 @@ Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niy
     quizType: 'matching',
     quizTitle: 'PARES SALITA!',
     quizInstructions:
-      'Piliin sa kahon ang wastong kahulugan ng salita sa bawat bilang. Pagkatapos ay bumuo ng sariling pangungusap gamit and mga salitang ito.',
+      'Piliin sa kahon ang wastong kahulugan ng salita sa bawat bilang.',
     nobela: `Naglakad na si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis. Hindi niya alam sinundan pala siya ni Tenyente Guevarra. Pinaalalahanan siya ng tenyente na mag-ingat dahil baka mapahamak din siyang katulad ng kanyang ama. 
 
 Inusisa ni Ibarra kung ano ang tunay na nangyari sa kanyang ama. Ang alam lang niya ay abala ito sa mga gawain kaya humingi ng paumanhin kung hindi siya makasulat sa anak. Isinalaysay ng tenyente ang gustong malaman ni Ibarra. 
@@ -280,12 +280,12 @@ Si Padre Sibyla ay siyang-siya sa pakikipag-usap sa mga dilag samantalang si Don
     quizType: 'line-connect',
     quizTitle: 'HULAAN MO!',
     quizInstructions:
-      'Basahin at unawain ang hint sa kanan at ikonekta ito sa salitang tinutukoy sa kaliwa.',
-    nobela: `Ang mga katangian ni Kapitan Tiyago ay itinuturing na hulog ng langit. Siya ay pandak, di kaputian at may bilugang mukha. Siya ay tinatayang nasa pagitan ng 35 taong gulang. Maitim ang kanyang buhok at kung hindi lamang nanabako at ngumanganga, maituturing na siya ay magandang lalaki. 
+      'Basahin ang mga salita at iugnay ang bawat salita ng tamang pangungusap sa kanang bahagi.',
+    nobela: `Ang mga katangian ni Kapitan Tiyago ay itinuturing na hulog ng langit. Siya ay pandak, 'di kaputian at may bilugang mukha. Siya ay tinatayang nasa pagitan ng 35 taong gulang. Maitim ang kanyang buhok at kung hindi lamang gumagamit ng tabako at ngumanganga, maituturing na siya ay magandang lalaki. 
 
-Siya ang pakamayaman sa Binundok dahil marami siyang negosyo at mga iba pang klase ng ari-arian. Tanyag din siya sa Pampanga at Laguna bilang asendero. Hindi kataka-taka na para siyang lubong hinihipan sa pagpintog ng kanyang yaman. 
+Siya ang pinakamayaman sa Binundok dahil marami siyang negosyo at mga iba pang klase ng ari-arian. Tanyag din siya sa Pampanga at Laguna bilang asendero. Hindi kataka-taka na para siyang lubong hinihipan sa pagpintog ng kanyang yaman. 
 
-Dahil siya ay mayaman, siya ay isang maimpluwensyang tao. Siya ay malakas sa mga taong nasa gobeyerno at halos kaibigan niya ang lahat ng mga prayle. Ang turing niya sa sarili ay isang tunay na Espanyol, hindi Pilipino. Kasundo niya ang Diyos dahil nagagawa niyang bilhin ang kabanalan.
+Dahil siya ay mayaman, siya ay isang maimpluwensyang tao. Siya ay malakas sa mga taong nasa gobyerno at halos kaibigan niya ang lahat ng mga prayle. Ang turing niya sa sarili ay isang tunay na Espanyol, hindi Pilipino. Kasundo niya ang Diyos dahil nagagawa niyang bilhin ang kabanalan.
 
 Katunayan, siya ay nagpapamisa at nagpapadasal tungkol sa kanyang sarili. Ipinalalagay ng balana na siya ay nakapagtatamo ng kalangitan. Iisipin na lamang na nasa kanyang silid ang lahat ng mga santo at santang sinasamba katulad nina Sta. Lucia, San Pascual Bailon, San Antonio de Padua, San Francisco de Asis, San Antonio Abad, San Miquel, Sto. Domingo, Hesukristo at ang banal na mag-anak.
 
@@ -293,7 +293,7 @@ Para kay Kapitan Tiyago kahit na ano ang itakda ng mga Espanyol, yaon ay karapat
 
 Anumang reglamento o patakaran ay kanyang sinusunod. Sipsip din siya sa mga taong nasa poder. Basta may okasyon na katulad ng kapanganakan at kapistahan, lagi siyang may handog na regalo. 
 
-Si Kapitan Tiyago ang tanging kuripot na mangangalakal ng asukal sa Malabon. Dahil sa kakuriputan ng ama, siya ay hindi pinag-aral. Naging katulong at tinuruan sya ng isang paring Dominiko. Nang mamatay ang pari at ama nito, siya'y mag-isang nangalakal. Nakilala nya si Pia Alba na isang magandang dalagang taga Sta. Cruz. 
+Si Kapitan Tiyago ang tanging kuripot na mangangalakal ng asukal sa Malabon. Dahil sa kakuriputan ng ama, siya ay hindi pinag-aral. Naging katulong at tinuruan siya ng isang paring Dominiko. Nang mamatay ang pari at ama nito, siya'y mag-isang nangalakal. Nakilala nya si Pia Alba na isang magandang dalagang taga Sta. Cruz. 
 
 Nagtulong sila sa paghahanapbuhay hanggang sa yumaman nang husto at nakilala sa alta sosyedad. Ang pagbili nila ng lupain sa San Diego ang naging daan upang maging kaututang dila roon ang kura na si Padre Damaso.
 
@@ -341,7 +341,7 @@ Pagpasok ni Maria sa kombento, nagpunta naman si Ibarra sa Europa upang mag-aral
     ],
     // The pool of definitions to be displayed on the right side (Jumbled order)
     matchingChoices: [
-      'Ang kilos ng sobrang pagyuko o pakikisama sa mga may kapangyarihan upang makamit ang pansariling kapakinabangan.',
+      'Ito ay sumasagisag sa negatibong damdamin na maaaring makasira sa pagkakaisa at mabuting samahan ng bawat isa.',
       'Uri ng matibay na pananalig o paniniwala na sinusukat sa pamamagitan ng pagsunod sa batas o ritwal.',
       'Ang pagkilos na naglalayong mapagkalooban ng pabor o gantimpala ang iba sa tuwing may okasyon o pagdiriwang.',
       'Ang kilos o ugali ng sobrang pagtitipid o pag-iingat sa pera na madalas humahadlang sa sariling kaginhawaan.',

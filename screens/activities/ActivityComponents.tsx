@@ -10,7 +10,7 @@
     const allCharacters = [
       {
         id: 1,
-        name: 'Ibarra',
+        name: 'Crisostomo Ibarra',
         question:
             'Batay sa kanyang kasuotan at ekspresyon, paano mo ilalarawan ang kanyang papel sa lipunang ginagalawan niya?',
         image: require('../../assets/images/ibarra.png'),
@@ -31,21 +31,21 @@
       },
       {
         id: 4,
-        name: 'Tiya Isabel',
+        name: 'Donya Pia Alba',
         question:
             'Batay sa kanyang postura, paano mo ilalarawan ang katangian na namamayani sa kanya?',
         image: require('../../assets/images/pia.png'),
       },
       {
         id: 5,
-        name: 'Teniente',
+        name: 'Kapitan Tiyago',
         question:
             'Ano ang maaaring ipahiwatig ng kanyang ekspresyon sa mata o mukha tungkol sa kanyang pag-iisip o damdamin?',
         image: require('../../assets/images/tiago.png'),
       },
       {
         id: 6,
-        name: 'Matandang Babae',
+        name: 'Tiya Isabel',
         question:
             'Batay sa kaniyang pananamit, anong hinuha ang mabubuo mo tungkol sa kaniyang katayuan sa lipunan at ang kaniyang partikular na tungkulin sa loob ng pamilya?',
         image: require('../../assets/images/tiya.png'),
@@ -272,12 +272,12 @@
         // Check if all completed
         if (newCount === allCharacters.length) {
           Alert.alert(
-              'Galing!',
+              'Mahusay!',
               'Natapos mo na ang lahat ng mga karakter! Ang iyong mga sagot ay nai-save na.',
               [{ text: 'OK' }]
           );
         } else {
-          Alert.alert('Galing!', 'Ang sagot ay nai-save na. Kumuha ng isa pa.', [
+          Alert.alert('Mahusay!', 'Ang sagot ay nai-save na. Kumuha ng isa pa.', [
             { text: 'Sige' },
           ]);
         }
@@ -363,9 +363,9 @@
               </Text>
             </View>
             <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
-              Pindutin ang pulang bilog sa gitna upang simulan ang gawain. Pagmasdan
-              ang mabuti ang anyo, pananamit, at ekspresyon ng mga karakter sa
-              larawan. Gamit ang mga detalyang ito, maghigay ng iyong hinuha tungkol
+              Pindutin ang pulang bilog sa gitna upang simulan ang gawain. Pagmasdang
+              mabuti ang anyo, pananamit, at ekspresyon ng mga karakter sa
+              larawan. Gamit ang mga detalyeng ito, magbigay ng iyong hinuha tungkol
               sa kanilang pagkatao at maaaring papel sa nobela.
             </Text>
           </View>
@@ -644,13 +644,13 @@
       {
         id: 2,
         question:
-          'Paano inilalarawan sa teksto ang pagtrato kay Ibarra, at ano ang ipinahihiwatig nito tungkol sa umiiral na sistema ng kapangyarihan?',
+          'Paano inilarawan sa teksto and pagtrato kay Ibarra? Ano ang ipinahihiwatig nito tungkol sa umiiral na kaayusan ng kapangyarihan sa lipunan noong panahong iyon?',
         key: '🔑',
       },
       {
         id: 3,
         question:
-          'Paano inilalarawan sa nobela ang mga gawi at pamamaraan ng mga prayle, at sa iyong pagsusuri, masasabi mo bang makatarungan ang mga ito? Patunayan ang iyong sagot gamit ang mga sitwasyon at implikasyong ipinakita sa akda.',
+          'Ano-ano ang mga ginawa ng mga prayle sa nobela? Sa iyong palagay, makatarungan ba ang kanilangmga ginawa? Ipaliwanag ang iyong sagot batay sa mga pangyayari sa akda.',
         key: '🔑',
       },
       {
@@ -876,7 +876,8 @@
             elevation: 5,
           }}>
           <Text style={{ textAlign: 'center', fontSize: 12, lineHeight: 20, color: '#78350f' }}>
-            <Text style={{ fontWeight: 'bold' }}>Panuto:</Text> Pumili ng isang susi sa  loob ng kahon. Ang numerong nasa susi ay tutugma sa pintong bubuksan mo sa ibaba. Pagkabukas ng pinto, suriin ang nilalaman at sagutin ang katanungang nakapaloob dito.
+            <Text style={{ fontWeight: 'bold' }}>Panuto:</Text>
+            Pumili ng numerong susi mula sa bilog. Bawat numero ay may kaukulang nilalaman. Pagpili ng numero, suriin ang nilalaman nito at sagutan ang katanungang nakapaloob dito.
 
           </Text>
         </View>

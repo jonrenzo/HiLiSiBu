@@ -63,7 +63,7 @@ const characters = [
   },
   {
     id: 7,
-    name: 'Tiya Isabela',
+    name: 'Tiya Isabel',
     image: require('../assets/images/tiya.png'), // Replace with actual image
     description:
       'Siya ang hipag ni Kapitan Trago na nag-alaga kay Maria Clara simula nang siya ay sanggol pa lamang.',
