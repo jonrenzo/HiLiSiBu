@@ -243,13 +243,13 @@ export default function ProfileScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity
+{/*          <TouchableOpacity
             onPress={() => handleExport('talasalitaan')}
             className="mt-4 items-center rounded-full bg-[#3e2723] py-3 shadow-lg active:opacity-80">
             <Text className="font-poppins-bold uppercase tracking-widest text-[#e8d4b0]">
               Talasalitaan
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
 
           <TouchableOpacity
             onPress={handleShowQRCode}
