@@ -64,7 +64,7 @@ Iniwanan na ni Tenyente ang umpukan, pagka-tapos nitong makapagpaliwanag. Sinika
       },
       {
         id: 2,
-        question: 'Dahil sa kanyang mahayap na pananalita, nawalan siya ng mga kaibigan.',
+        question: 'Dahil sa kanyang mahahayap na pananalita, nawalan siya ng mga kaibigan.',
         wordToDefine: 'mahahayap',
         options: ['Magiliw', 'Mapanakit', 'Mahinahon', 'Magaspang'],
         correct: 'Mapanakit',
@@ -179,7 +179,7 @@ Nagulat ang mga tao sa sinabi ng pari. Sumagot si Ibarra na ang mga sinasabi niy
       {
         id: 5,
         question: 'Noong panahon ng kolonyalismong Kastila, maraming Indio ang napilitang magtrabaho sa hacienda.',
-        wordToDefine: 'Indiyo',
+        wordToDefine: 'Indio',
         correct: 'MANGMANG',
         // Visual Clues: M _ N _ M _ N _
         clues: ['K','A','','U','T','','B','','N', 'G', '-','P','','L','','P','','N',''],
@@ -252,7 +252,7 @@ Si Padre Sibyla ay siyang-siya sa pakikipag-usap sa mga dilag samantalang si Don
       },
       {
         id: 2,
-        term: 'Isang panuluyan kung saan maaaring magpahinga o matuluyan ang mga manlalakbay.',
+        term: 'Ito ay maliit at hindi palagiang tindahang-bayan, karaniwan kung pista.',
         correct: 'Fonda',
       },
       {

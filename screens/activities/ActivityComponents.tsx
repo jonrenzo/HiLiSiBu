@@ -497,7 +497,10 @@
                       size={40}
                       color="white"
                   />
-                  <Text className="mt-2 font-poppins-bold text-sm text-white shadow-sm">
+                  <Text className="mt-2 font-poppins-bold text-sm text-white shadow-sm"
+                  style={{
+                    color:'red',
+                  }}>
                     {isClawing ? 'KUMUHA...' : 'SIMULA'}
                   </Text>
                 </TouchableOpacity>
@@ -1319,7 +1322,7 @@
     const rubric = [
       {
         label:
-          'Pag-unawa sa Wakas – Naipakita ang malinaw at wastong pag-unawa sa mahahalagang pangyayari sa wakas ng Noli Me Tangere',
+          'Pag-unawa sa Wakas – Naipakita ang malinaw at wastong pag-unawa sa mahahalagang pangyayari sa wakas ng Noli Me Tangere.',
         points: '5 puntos',
       },
       {
@@ -1333,15 +1336,19 @@
         points: '5 puntos',
       },
       {
-        label: 'Kalinawan ng Kaisipan – Malinaw at madaling maunawaan ang ipinahahayag na kaisipan.',
+        label:
+          'Kalinawan ng Kaisipan – Malinaw at madaling maunawaan ang ipinahahayag na kaisipan.',
         points: '5 puntos',
       },
-      { label: 'Wastong Gamit ng Wika – Tama ang gramatika, baybay, at bantas.', points: '5 puntos' },
+      {
+        label: 'Wastong Gamit ng Wika – Tama ang gramatika, baybay, at bantas.',
+        points: '5 puntos',
+      },
     ];
-  
+
     const [summary, setSummary] = useState('');
     const activityId = `pagbubuod-${rangeId}`;
-  
+
     useEffect(() => {
       const loadAnswers = async () => {
         const savedAnswers = await getAnswers(activityId);
@@ -1351,22 +1358,22 @@
       };
       loadAnswers();
     }, [activityId]);
-  
+
     const handleSave = async () => {
       const user = await getUser();
       if (!user) {
         Alert.alert('Error', 'Hindi mahanap ang user.');
         return;
       }
-  
+
       const score = summary.trim().length > 0 ? 1 : 0;
-  
+
       await saveAnswer(activityId, 1, summary, false);
       await saveScore(user.id, activityId, score);
-  
+
       Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
     };
-  
+
     return (
       <View className="pb-8">
         {/* Header */}
@@ -1374,38 +1381,31 @@
           <FontAwesome5 name="edit" size={24} color="#3e2723" />
           <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagbubuod</Text>
         </View>
-  
+
         {/* Instruction Box */}
         <View className="mb-6 rounded-xl border-2 border-b-4 border-[#5d4037] bg-[#ffecb3] p-4 shadow-sm">
           <Text className="text-justify font-poppins text-xs leading-5 text-[#3e2723]">
             <Text className="font-bold">Panuto:</Text> Sumulat ng isang maikling buod tungkol sa
-            kabanata isa (1) hanggang tatlo (3) mula sa nobelang Noli Me Tangere. Tiyakin na ang iyong
-            buod ay malinaw, organisado, at binubuo lamang ng hindi hihigit sa sampung (10)
+            kabanata isa (1) hanggang tatlo (3) mula sa nobelang Noli Me Tangere. Tiyakin na ang
+            iyong buod ay malinaw, organisado, at binubuo lamang ng hindi hihigit sa sampung (10)
             pangungusap.
           </Text>
         </View>
-  
-        {/* Writing Area (Lined Paper) */}
-        <View className="relative mb-6 min-h-[300px] overflow-hidden rounded-3xl border-4 border-[#e8d4b0] bg-white shadow-md">
-          {/* Lined Background */}
-          <View className="absolute bottom-0 left-0 right-0 top-0 px-6 pt-10">
-            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <View key={i} className="h-10 w-full border-b-2 border-black" />
-            ))}
-          </View>
-  
-          {/* TextInput Overlay */}
+
+        {/* Writing Area - Plain Textbox */}
+        <View className="mb-6 min-h-[200px] overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm">
           <TextInput
             multiline
             placeholder="Simulan ang iyong buod dito..."
-            className="flex-1 px-6 pt-10 font-poppins text-base leading-[40px] text-[#3e2723]"
+            placeholderTextColor="#9e9e9e"
+            className="flex-1 px-4 py-3 font-poppins text-xs text-[#3e2723]"
             textAlignVertical="top"
-            style={{ lineHeight: 80 }}
+            style={{ lineHeight: 20 }}
             onChangeText={setSummary}
             value={summary}
           />
         </View>
-  
+
         {/* Rubric Table */}
         <View className="border-2 border-[#3e2723] bg-[#f5f5f5]">
           {/* Table Header */}
@@ -1417,7 +1417,7 @@
               <Text className="font-poppins-bold text-[10px] text-[#3e2723]">Puntos</Text>
             </View>
           </View>
-  
+
           {/* Table Rows */}
           {rubric.map((row, index) => (
             <View key={index} className="flex-row border-b border-[#3e2723] bg-white">
@@ -1431,7 +1431,7 @@
               </View>
             </View>
           ))}
-  
+
           {/* Total Row */}
           <View className="flex-row bg-[#d7ccc8]">
             <View className="flex-1 items-center justify-center border-r border-[#3e2723] p-2">
@@ -1442,6 +1442,7 @@
             </View>
           </View>
         </View>
+
         <TouchableOpacity
           onPress={handleSave}
           className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
@@ -1451,121 +1452,153 @@
       </View>
     );
   };
-  
   // ==================================================
   // PAGHIHINUHA (Kabanata 4-6) - Situation Analysis
   // ==================================================
   export const Paghihinuha4to6 = ({ rangeId }: { rangeId: string }) => {
-    const cards = [
+    const rows = [
       {
         id: 1,
-        color: 'bg-[#eefeeb]', // Light Green
-        borderColor: 'border-[#c8e6c9]',
-        title: 'Sitwasyon:',
-        text: 'Naglakad si Ibarra nang walang tiyak na paroroonan hanggang marating niya ang liwasan ng Binundok. Wala pa rin siyang nakitang pagbabago mula nang siya ay umalis...',
+        images: [require('../../assets/images/tomb.png')],
       },
       {
         id: 2,
-        color: 'bg-[#fff8e1]', // Light Yellow
-        borderColor: 'border-[#ffecb3]',
-        title: 'Sitwasyon:',
-        text: 'Pagdating ni Ibarra sa Fonda de Lala, naupo siya sa silid at pinagmamasdan mula sa bintana ang maliwanag na bahay sa kabila ng ilog. Narinig niya ang kalansing ng kubyertos at tugtugin ng orkestra...',
+        images: [require('../../assets/images/fan.png'), require('../../assets/images/cross.png')],
       },
       {
         id: 3,
-        color: 'bg-[#e0f7fa]', // Light Blue
-        borderColor: 'border-[#b2ebf2]',
-        title: 'Sitwasyon:',
-        text: 'Ipinakita ang kayamanan, impluwensya, at pamumuhay ni Kapitan Tiyago: pandak, may bilugang mukha, maimpluwensyang tao, kaibigan ng gobyerno at prayle, at turing sa sarili bilang tunay na Espanyol...',
+        images: [require('../../assets/images/cane.png'), require('../../assets/images/chest.png')],
       },
     ];
-  
-    const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+
+    const [answers, setAnswers] = useState<{
+      [key: number]: { tauhan: string; pahiwatig: string };
+    }>({});
     const activityId = `paghihinuha-${rangeId}`;
-  
+
     useEffect(() => {
       const loadAnswers = async () => {
         const savedAnswers = await getAnswers(activityId);
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
-          return acc;
-        }, {});
+        const answersMap = savedAnswers.reduce(
+          (acc, item) => {
+            const [rowId, field] = item.question_index.toString().split('-');
+            if (!acc[Number(rowId)]) acc[Number(rowId)] = { tauhan: '', pahiwatig: '' };
+            acc[Number(rowId)][field as 'tauhan' | 'pahiwatig'] = item.selected_answer;
+            return acc;
+          },
+          {} as { [key: number]: { tauhan: string; pahiwatig: string } }
+        );
         setAnswers(answersMap);
       };
       loadAnswers();
     }, [activityId]);
-  
-    const handleAnswerChange = (id: number, text: string) => {
-      setAnswers((prev) => ({ ...prev, [id]: text }));
+
+    const handleAnswerChange = (id: number, field: 'tauhan' | 'pahiwatig', text: string) => {
+      setAnswers((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          [field]: text,
+        },
+      }));
     };
-  
+
     const handleSave = async () => {
       const user = await getUser();
       if (!user) {
         Alert.alert('Error', 'Hindi mahanap ang user.');
         return;
       }
-  
+
       let score = 0;
-  
-      for (const card of cards) {
-        const answer = answers[card.id];
-        if (answer) {
-          await saveAnswer(activityId, card.id, answer, false);
+
+      for (const row of rows) {
+        const answer = answers[row.id];
+        if (answer?.tauhan) {
+          await saveAnswer(activityId, `${row.id}-tauhan`, answer.tauhan, false);
+          score++;
+        }
+        if (answer?.pahiwatig) {
+          await saveAnswer(activityId, `${row.id}-pahiwatig`, answer.pahiwatig, false);
           score++;
         }
       }
-  
+
       await saveScore(user.id, activityId, score);
       Alert.alert('Mahusay!', 'Ang iyong mga sagot ay nai-save na.');
     };
-  
+
     return (
       <View className="pb-8">
         {/* Header */}
         <View className="mb-4 flex-row items-center">
           <FontAwesome5 name="search" size={20} color="#3e2723" />
           <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">
-            Paghihinuha (Kabanata 4-6)
+            Paghihinuha
           </Text>
         </View>
-  
+
         <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-[#5d4037]">
-          <Text className="font-bold">Panuto:</Text> Basahin at unawain ang bawat sitwasyon. Batay sa
-          mga pahiwatig sa teksto, ilahad ang posibleng susunod na pangyayari, damdamin, o aksyon ng
-          tauhan at ipaliwanag ang iyong lohikal na paghihinuha.
+          <Text className="font-bold">Panuto:</Text> Suriin ang bawat bagay sa talahanayan at
+          tukuyin ang tauhang may kaugnayan sa nobela. Gamitin ang iyong kakayahan sa paghihinuha
+          upang ipaliwanag ang pahiwatig o kahulugan ng bawat bagay.
         </Text>
-  
-        {/* Cards Loop */}
-        {cards.map((card) => (
-          <View key={card.id} className="mb-6 flex-row">
-            {/* Left: Situation Box */}
-            <View
-              className={`w-32 rounded-xl p-4 ${card.color} border ${card.borderColor} mr-3 justify-center shadow-sm`}>
-              <Text className="mb-2 text-center font-poppins-bold text-xs text-[#3e2723]">
-                {card.title}
-              </Text>
-              <Text className="text-center font-serif text-[10px] italic leading-4 text-[#5d4037]">
-                {card.text}
-              </Text>
+
+        {/* Table */}
+        <View className="overflow-hidden rounded-xl border border-[#d7ccc8] bg-white">
+          {/* Table Header */}
+          <View className="flex-row border-b border-[#d7ccc8]">
+            <View className="flex-1 items-center justify-center border-r border-[#d7ccc8] py-3">
+              <Text className="font-poppins-bold text-xs text-[#3e2723]">BAGAY</Text>
             </View>
-  
-            {/* Right: Answer Lines */}
-            <View className="shadow-inner flex-1 justify-between rounded-xl border border-[#d7ccc8] bg-[#efede6] p-3 py-1">
-              {[1, 2, 3, 4, 5].map((line) => (
-                <View key={line} className="mb-1 h-6 w-full border-b border-[#bcaaa4]" />
-              ))}
-              {/* Invisible Text Input overlaying the lines for typing */}
-              <TextInput
-                className="absolute bottom-0 left-0 right-0 top-0 p-3 font-poppins text-xs leading-7 text-[#3e2723]"
-                multiline
-                textAlignVertical="top"
-                onChangeText={(text) => handleAnswerChange(card.id, text)}
-                value={answers[card.id] || ''}
-              />
+            <View className="flex-1 items-center justify-center border-r border-[#d7ccc8] py-3">
+              <Text className="font-poppins-bold text-xs text-[#3e2723]">TAUHAN</Text>
+            </View>
+            <View className="flex-1 items-center justify-center py-3">
+              <Text className="font-poppins-bold text-xs text-[#3e2723]">PAHIWATIG</Text>
             </View>
           </View>
-        ))}
+
+          {/* Table Rows */}
+          {rows.map((row, index) => (
+            <View
+              key={row.id}
+              className={`flex-row ${index < rows.length - 1 ? 'border-b border-[#d7ccc8]' : ''}`}>
+              {/* BAGAY - Image(s) */}
+              <View className="flex-1 flex-row items-center justify-center border-r border-[#d7ccc8] py-4">
+                {row.images.map((img, i) => (
+                  <Image key={i} source={img} className="h-16 w-16" resizeMode="contain" />
+                ))}
+              </View>
+
+              {/* TAUHAN - Textbox */}
+              <View className="flex-1 items-center justify-center border-r border-[#d7ccc8] px-3 py-4">
+                <TextInput
+                  className="w-full rounded-lg border border-[#d7ccc8] bg-[#faf9f7] p-2 font-poppins text-xs text-[#3e2723]"
+                  multiline
+                  textAlignVertical="top"
+                  style={{ minHeight: 60 }}
+                  onChangeText={(text) => handleAnswerChange(row.id, 'tauhan', text)}
+                  value={answers[row.id]?.tauhan || ''}
+                />
+              </View>
+
+              {/* PAHIWATIG - Textbox */}
+              <View className="flex-1 justify-center px-3 py-4">
+                <TextInput
+                  className="w-full rounded-lg border border-[#d7ccc8] bg-[#faf9f7] p-2 font-poppins text-xs text-[#3e2723]"
+                  multiline
+                  textAlignVertical="top"
+                  style={{ minHeight: 60 }}
+                  onChangeText={(text) => handleAnswerChange(row.id, 'pahiwatig', text)}
+                  value={answers[row.id]?.pahiwatig || ''}
+                />
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Save Button */}
         <TouchableOpacity
           onPress={handleSave}
           className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
@@ -2262,10 +2295,10 @@
         points: '5 puntos',
       },
     ];
-  
+
     const [summary, setSummary] = useState('');
     const activityId = `pagbubuod-${rangeId}`;
-  
+
     useEffect(() => {
       const loadAnswers = async () => {
         const savedAnswers = await getAnswers(activityId);
@@ -2275,22 +2308,22 @@
       };
       loadAnswers();
     }, [activityId]);
-  
+
     const handleSave = async () => {
       const user = await getUser();
       if (!user) {
         Alert.alert('Error', 'Hindi mahanap ang user.');
         return;
       }
-  
+
       const score = summary.trim().length > 0 ? 1 : 0;
-  
+
       await saveAnswer(activityId, 1, summary, false);
       await saveScore(user.id, activityId, score);
-  
+
       Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
     };
-  
+
     return (
       <View className="pb-8">
         {/* Header */}
@@ -2298,34 +2331,32 @@
           <FontAwesome5 name="edit" size={24} color="#3e2723" />
           <Text className="ml-2 font-serif text-xl font-bold text-[#3e2723]">Pagbubuod</Text>
         </View>
-  
+
         {/* Instruction Box */}
         <Text className="mb-4 text-justify font-poppins text-xs leading-5 text-[#5d4037]">
           <Text className="font-bold">Panuto:</Text> Basahing mabuti ang itinakdang kabanata mula sa
-          Nobelang Noli Me Tangere. Gamit ang mga emoji, sumulat ng isang maikling buod na binubuo ng
-          apat (4) hanggang anim (6) na pangungusap.
+          Nobelang Noli Me Tangere. Gamit ang mga emoji, sumulat ng isang maikling buod na binubuo
+          ng apat (4) hanggang anim (6) na pangungusap.
           {'\n\n'}
           Tiyaking malinaw na nakasaad ang pangunahing ideya, mahahalagang pangyayari, at tamang
-          pagkakasunod-sunod ng mga ito. Iwasan ang paglalagay ng labis na detalye, sariling opinyon,
-          o komentaryo; ibatay lamang ang sagot sa mismong nilalaman ng kabanata.
+          pagkakasunod-sunod ng mga ito. Iwasan ang paglalagay ng labis na detalye, sariling
+          opinyon, o komentaryo; ibatay lamang ang sagot sa mismong nilalaman ng kabanata.
         </Text>
-  
-        {/* Writing Area (Lined Paper) */}
-        <View className="relative mb-6 min-h-[350px] overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm">
-          {/* TextInput Overlay with Emoji Placeholder */}
+
+        {/* Writing Area */}
+        <View className="relative mb-6 min-h-[200px] overflow-hidden rounded-xl border border-gray-400 bg-[#f5f5f5] shadow-sm">
           <TextInput
             multiline
-            // The emoji sequence is now here as a placeholder example
             placeholder="📜🏠😲🤫🔥😮👥   (Magsimula rito...)"
             placeholderTextColor="#757575"
-            className="flex-1 px-4 pt-10 font-poppins text-xs  leading-[32px]"
+            className="flex-1 px-4 py-3 font-poppins text-xs text-[#3e2723]"
             textAlignVertical="top"
-            style={{ lineHeight: 70 }} // Matches the height of the background lines
+            style={{ lineHeight: 20 }}
             onChangeText={setSummary}
             value={summary}
           />
         </View>
-  
+
         {/* Rubric Table */}
         <View className="mb-8 border-2 border-black bg-[#f5f5f5]">
           {/* Table Header */}
@@ -2337,7 +2368,7 @@
               <Text className="font-poppins-bold text-[10px] text-black">Puntos</Text>
             </View>
           </View>
-  
+
           {/* Table Rows */}
           {rubric.map((row, index) => (
             <View key={index} className="flex-row border-b border-black bg-white">
@@ -2352,7 +2383,7 @@
               </View>
             </View>
           ))}
-  
+
           {/* Total Row */}
           <View className="h-8 flex-row bg-[#d7ccc8]">
             <View className="flex-1 items-center justify-center border-r border-black">
@@ -2363,6 +2394,7 @@
             </View>
           </View>
         </View>
+
         <TouchableOpacity
           onPress={handleSave}
           className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">

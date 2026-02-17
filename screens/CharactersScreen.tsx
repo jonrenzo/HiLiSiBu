@@ -31,7 +31,7 @@ const characters = [
     name: 'Maria Clara delos Santos',
     image: require('../assets/images/maria.png'),
     description:
-      'Siya ang Kasintahan ni Crisostomo Ibarra na kumakatawan sa isang uri ng Pilipinang lumaki sa kumbento at nagkaroon ng edukasyong nakasalig sa doktrina ng relihiyon.',
+      'Siya ang kasintahan ni Crisostomo Ibarra na kumakatawan sa isang uri ng Pilipinang lumaki sa kumbento at nagkaroon ng edukasyong nakasalig sa doktrina ng relihiyon.',
   },
   {
     id: 3,
@@ -66,7 +66,7 @@ const characters = [
     name: 'Tiya Isabel',
     image: require('../assets/images/tiya.png'), // Replace with actual image
     description:
-      'Siya ang hipag ni Kapitan Trago na nag-alaga kay Maria Clara simula nang siya ay sanggol pa lamang.',
+      'Siya ang hipag ni Kapitan Tiago na nag-alaga kay Maria Clara simula nang siya ay sanggol pa lamang.',
   },
   {
     id: 8,
@@ -80,7 +80,7 @@ const characters = [
     name: 'Alperes ',
     image: require('../assets/images/alp.png'), // Replace with actual image
     description:
-      'Siya ang puno ng mga guwardiya sibil at siya rin ay mahigpit na kaagaw ng kura sa kapangyarihan sa San Diego.',
+      'Siya ang pinuno ng mga guwardiya sibil at siya rin ay mahigpit na kaagaw ng kura sa kapangyarihan sa San Diego.',
   },
   {
     id: 10,
