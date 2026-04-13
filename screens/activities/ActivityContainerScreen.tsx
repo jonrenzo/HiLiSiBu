@@ -133,18 +133,18 @@ export default function ActivityContainerScreen() {
 
           {/* Locked Tabs */}
           <TabButton
-            active={activeTab === 'pagsisiyasat'}
-            onPress={() => handleTabPress('pagsisiyasat')}
-            icon="eye"
-            label="Pagsisiyasat"
-            locked={isLocked}
-          />
-          <TabButton
             active={activeTab === 'paglilinaw'}
             onPress={() => handleTabPress('paglilinaw')}
             icon="projector-screen"
             label="Paglilinaw"
             isMaterialIcon
+            locked={isLocked}
+          />
+          <TabButton
+            active={activeTab === 'pagsisiyasat'}
+            onPress={() => handleTabPress('pagsisiyasat')}
+            icon="eye"
+            label="Pagsisiyasat"
             locked={isLocked}
           />
           <TabButton

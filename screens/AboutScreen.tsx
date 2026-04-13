@@ -30,7 +30,7 @@ export default function AboutScreen() {
         {/* Content Container */}
         <View className="mb-4 flex-1 overflow-hidden rounded-3xl border-4 border-[#8B4513] bg-parchment shadow-2xl">
           <View className="items-center bg-[#8B4513] py-3">
-            <Text className="font-poppins-bold text-lg italic text-[#E8D4B0]">HiLiSiBu</Text>
+            <Text className="font-poppins-bold text-lg italic text-[#E8D4B0]">P4 MODEL</Text>
           </View>
 
           <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
@@ -39,7 +39,7 @@ export default function AboutScreen() {
               {/* Reduced size to w-20 h-20 (80px). Change to w-16 h-16 (64px) if still too big. */}
               <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-parchment">
                 <Image
-                  source={require('../assets/newLogo.png')}
+                  source={require('../assets/logo.png')}
                   className="h-full w-full"
                   resizeMode="contain"
                 />

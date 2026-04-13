@@ -64,7 +64,7 @@ export default function ActivitiesMenuScreen() {
 
         {/* Footer: Tags */}
         <View className="flex-row flex-wrap gap-2">
-          {['Paghihinuha', 'Pagsisiyasat', 'Paglilinaw', 'Pagbubuod'].map((tag, i) => (
+          {['Paghihinuha', 'Paglilinaw', 'Pagsisiyasat', 'Pagbubuod'].map((tag, i) => (
             <View
               key={i}
               className="rounded-md border border-[#5d4037]/10 bg-[#5d4037]/5 px-2 py-1">
