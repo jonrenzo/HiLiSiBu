@@ -3,8 +3,11 @@ import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { initDatabase, getUser } from '../services/db';
+import { supabase } from '../src/lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
 // Screens
+import LoginScreen from '../screens/LoginScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
 import AboutScreen from '../screens/AboutScreen';
 import TabNavigator from './TabNavigator';
@@ -13,6 +16,7 @@ import ChapterDetailScreen from '../screens/ChapterDetailScreen';
 import ActivityContainerScreen from '../screens/activities/ActivityContainerScreen'; // <-- Import the correct screen
 
 export type RootStackParamList = {
+  Login: undefined;
   Registration: undefined;
   About: undefined;
   MainTabs: undefined;
@@ -29,25 +33,41 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    const checkUserAndInitDB = async () => {
+    const checkAuthAndInitDB = async () => {
       try {
         await initDatabase();
-        const user = await getUser();
 
-        if (user) {
-          setInitialRoute('About');
+        const {
+          data: { session: supabaseSession },
+        } = await supabase.auth.getSession();
+        setSession(supabaseSession);
+
+        if (supabaseSession) {
+          setInitialRoute('MainTabs');
         } else {
-          setInitialRoute('Registration');
+          setInitialRoute('Login');
         }
       } catch (e) {
         console.error('Initialization Error:', e);
-        setInitialRoute('Registration');
+        setInitialRoute('Login');
       }
     };
 
-    checkUserAndInitDB();
+    checkAuthAndInitDB();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        setInitialRoute('MainTabs');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   if (initialRoute === null) {
@@ -72,6 +92,7 @@ export default function AppNavigator() {
           headerShown: false,
           animation: 'fade',
         }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Registration" component={RegistrationScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />

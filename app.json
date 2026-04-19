@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HiLiSiBu",
-    "slug": "HiLiSiBu",
+    "name": "P4 Model",
+    "slug": "p4-model",
     "version": "1.0.0",
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,8 +34,9 @@
       "supportsTablet": true
     },
     "android": {
+      "icon": "./assets/logo.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.jonrenzo.HiLiSiBu"
@@ -43,7 +44,9 @@
     "extra": {
       "eas": {
         "projectId": "38fa92d0-884d-4bd8-ae8a-2db398c8d298"
-      }
+      },
+      "supabaseUrl": "$EXPO_PUBLIC_SUPABASE_URL",
+      "supabaseAnonKey": "$EXPO_PUBLIC_SUPABASE_ANON_KEY"
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { getReadChapters } from '../services/db';
+import { useAuth } from '../src/hooks/useAuth';
+import { getChapterProgress } from '../src/services/supabase';
+import type { ChapterProgress } from '../src/services/supabase';
 
 const chapters = [
   {
@@ -56,16 +58,24 @@ const chapters = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user, profile } = useAuth();
   const [readChapters, setReadChapters] = useState<number[]>([]);
 
   useFocusEffect(
-    React.useCallback(() => {
-      const fetchReadChapters = async () => {
-        const chapters = await getReadChapters();
-        setReadChapters(chapters);
+    useCallback(() => {
+      const fetchProgress = async () => {
+        if (user) {
+          try {
+            const progress: ChapterProgress[] = await getChapterProgress(user.id);
+            const readIds = progress.filter((p) => p.is_read).map((p) => p.chapter_id);
+            setReadChapters(readIds);
+          } catch (error) {
+            console.error('Error fetching chapter progress:', error);
+          }
+        }
       };
-      fetchReadChapters();
-    }, [])
+      fetchProgress();
+    }, [user])
   );
 
   const handleRead = (chapter: (typeof chapters)[0]) => {
@@ -77,16 +87,29 @@ export default function HomeScreen() {
     });
   };
 
+  const completedCount = readChapters.length;
+  const studentName = profile?.name || 'Mag-aaral';
+
   return (
     <View className="flex-1 bg-[#4f2b21]">
       {/* Safe Area for Status Bar */}
       <SafeAreaView className="bg-[#4a342e]" />
 
       {/* Main Header Title */}
-      <View className={`px-4 pb-6 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
+      <View className={`px-4 pb-4 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
         <View className="rounded-lg border border-[#6d4c41] bg-[#5d4037] px-6 py-3 shadow-lg">
           <Text className="text-center font-poppins-bold text-2xl tracking-wide text-[#f5f5f5]">
             Mga Piling Kabanata
+          </Text>
+        </View>
+
+        {/* User greeting */}
+        <View className="mt-3 items-center">
+          <Text className="font-poppins text-sm text-[#e8d4b0]">
+            Hi, <Text className="font-poppins-bold">{studentName}</Text>
+          </Text>
+          <Text className="font-poppins text-xs text-[#bcaaa4]">
+            {completedCount}/6 na kabanata ang nabasa
           </Text>
         </View>
       </View>

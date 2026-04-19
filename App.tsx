@@ -9,9 +9,9 @@ import {
   Poppins_600SemiBold,
 } from '@expo-google-fonts/poppins';
 import AppNavigator from './navigation/AppNavigator';
+import { AuthProvider } from './src/hooks/useAuth';
 import './global.css';
 
-// Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
@@ -34,7 +34,9 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <AppNavigator />
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
     </View>
   );
 }
