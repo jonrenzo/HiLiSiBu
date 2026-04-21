@@ -26,6 +26,8 @@ import {
 import { supabase } from '../src/lib/supabase';
 import { useAuth } from '../src/hooks/useAuth';
 import { syncTalasalitaanAnswers, syncChapterRead } from '../services/sync';
+import { getTalasalitaanAnswers as getTalasalitaanFromSupabase } from '../src/services/supabase';
+
 
 type ChapterDetailRouteProp = RouteProp<RootStackParamList, 'ChapterDetail'>;
 
@@ -98,49 +100,69 @@ export default function ChapterDetailScreen() {
     React.useCallback(() => {
       const loadAnswers = async () => {
         if (chapterContent) {
+          try {
+            // 1. Try to load from Supabase (Source of Truth)
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const remoteData = await getTalasalitaanFromSupabase(user.id, id, chapterContent.quizType);
+              if (remoteData && remoteData.answers) {
+                console.log(`[Sync] Loaded Talasalitaan from remote for Chapter ${id}`);
+                applySavedData(remoteData.answers);
+                // Also save to local for offline
+                await saveTalasalitaanAnswers(id, chapterContent.quizType, remoteData.answers);
+                return;
+              }
+            }
+          } catch (error) {
+            console.error('[Sync] Error fetching Talasalitaan from Supabase:', error);
+          }
+
+          // 2. Fallback to local DB
           const savedData = await getTalasalitaanAnswers(id, chapterContent.quizType);
           if (savedData) {
-            switch (chapterContent.quizType) {
-              case 'multiple-choice':
-                setSelectedAnswers(savedData);
-                break;
-              case 'mind-map':
-                setMindMapInputs(savedData);
-                break;
-              case 'punan-mo':
-                // `savedData` is the `punanAnswers` object: { [qid]: "COMPLETEWORD" }
-                const savedAnswers = savedData as { [key: number]: string };
-                setPunanAnswers(savedAnswers);
-
-                // Populate individual input fields from the complete words
-                const newPunanInputs: { [key: string]: string } = {};
-                Object.keys(savedAnswers).forEach((questionIdStr) => {
-                  const qId = parseInt(questionIdStr, 10);
-                  const savedWord = savedAnswers[qId];
-                  const question = chapterContent.quiz.find((q) => q.id === qId);
-
-                  if (question && savedWord && question.clues) {
-                    question.clues.forEach((char, idx) => {
-                      if (char === '') {
-                        // This is a blank for user input
-                        const key = `q${qId}-${idx}`;
-                        newPunanInputs[key] = savedWord[idx] || '';
-                      }
-                    });
-                  }
-                });
-                setPunanInputs(newPunanInputs);
-                break;
-              case 'matching':
-                setMatches(savedData);
-                break;
-              case 'line-connect':
-                setConnectedPairs(savedData);
-                break;
-            }
+            applySavedData(savedData);
           }
         }
       };
+
+      const applySavedData = (savedData: any) => {
+        if (!chapterContent) return;
+        
+        switch (chapterContent.quizType) {
+          case 'multiple-choice':
+            setSelectedAnswers(savedData);
+            break;
+          case 'mind-map':
+            setMindMapInputs(savedData);
+            break;
+          case 'punan-mo':
+            const savedAnswers = savedData as { [key: number]: string };
+            setPunanAnswers(savedAnswers);
+            const newPunanInputs: { [key: string]: string } = {};
+            Object.keys(savedAnswers).forEach((questionIdStr) => {
+              const qId = parseInt(questionIdStr, 10);
+              const savedWord = savedAnswers[qId];
+              const question = chapterContent.quiz.find((q) => q.id === qId);
+              if (question && savedWord && question.clues) {
+                question.clues.forEach((char, idx) => {
+                  if (char === '') {
+                    const key = `q${qId}-${idx}`;
+                    newPunanInputs[key] = savedWord[idx] || '';
+                  }
+                });
+              }
+            });
+            setPunanInputs(newPunanInputs);
+            break;
+          case 'matching':
+            setMatches(savedData);
+            break;
+          case 'line-connect':
+            setConnectedPairs(savedData);
+            break;
+        }
+      };
+
       loadAnswers();
     }, [id, chapterContent])
   );

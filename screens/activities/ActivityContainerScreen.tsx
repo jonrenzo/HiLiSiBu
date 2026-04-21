@@ -14,7 +14,9 @@ import {
   Pagsisiyasat4to6,
   Pagbubuod4to6,
 } from './ActivityComponents';
-import { areChaptersRead } from '../../services/db';
+import { areChaptersRead, markChapterAsRead as markChapterLocally } from '../../services/db';
+import { supabase } from '../../src/lib/supabase';
+
 
 type ActivityScreenRouteProp = RouteProp<RootStackParamList, 'ActivityContainer'>;
 
@@ -43,6 +45,8 @@ export default function ActivityContainerScreen() {
   useEffect(() => {
     const checkChapterProgress = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
         // 1. Convert rangeId "01-03" into an array of numbers [1, 2, 3]
         const [startStr, endStr] = rangeId.split('-');
         const start = parseInt(startStr, 10);
@@ -53,16 +57,40 @@ export default function ActivityContainerScreen() {
           chaptersToCheck.push(i);
         }
 
-        // 2. Check DB if all these chapters are read
-        const allRead = await areChaptersRead(chaptersToCheck);
+        // 2. Check Local DB first (faster)
+        const localRead = await areChaptersRead(chaptersToCheck);
+        
+        if (localRead) {
+          setIsLocked(false);
+          return;
+        }
 
-        // 3. If all read, unlock. If not, keep locked.
-        setIsLocked(!allRead);
+        // 3. If local not read, check Supabase
+        if (user) {
+          const { data: remoteProgress, error } = await supabase
+            .from('chapter_progress')
+            .select('chapter_id')
+            .eq('user_id', user.id)
+            .in('chapter_id', chaptersToCheck)
+            .eq('is_read', true);
+
+          if (!error && remoteProgress && remoteProgress.length === chaptersToCheck.length) {
+            setIsLocked(false);
+            // Also sync to local DB so it's faster next time
+            for (const chId of chaptersToCheck) {
+              await markChapterLocally(chId);
+            }
+            return;
+          }
+        }
+
+        setIsLocked(true);
       } catch (error) {
         console.error('Error checking progress:', error);
-        setIsLocked(true); // Default to locked on error
+        setIsLocked(true);
       }
     };
+
 
     checkChapterProgress();
   }, [rangeId]);

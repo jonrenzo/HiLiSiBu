@@ -3,7 +3,7 @@ import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal,
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
 import { supabase } from '../../src/lib/supabase';
-import { saveActivityAnswer } from '../../src/services/supabase';
+import { saveActivityAnswer, getActivityAnswersFrom4p } from '../../src/services/supabase';
 import { syncAnswer } from '../../services/sync';
   
   // ==================================================
@@ -145,15 +145,22 @@ import { syncAnswer } from '../../services/sync';
     const loadProgress = async () => {
       try {
         setIsLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
   
-        // Load saved answers from database
-        const savedAnswers = await getAnswers(activityId);
+        // 1. Load saved answers from Supabase (Source of Truth)
+        const parts = activityId.split('-');
+        const activityType = parts[0];
+        const chapterRange = parts.slice(1).join('-') || '';
+
+        
+        const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
   
         // Convert array to object map
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
+        const answersMap = supabaseAnswers.reduce((acc, item) => {
+          acc[Number(item.question_index)] = item.answer;
           return acc;
-        }, {});
+        }, {} as { [key: number]: string });
   
         setSavedAnswers(answersMap);
   
@@ -168,21 +175,28 @@ import { syncAnswer } from '../../services/sync';
         setAvailableCharacters(remainingCharacters);
         setCompletedCount(completedIds.length);
   
-        console.log('Progress loaded:', {
-          completed: completedIds.length,
-          remaining: remainingCharacters.length
-        });
+        // 2. Also save to local DB for offline cache
+        for (const [idx, ans] of Object.entries(answersMap)) {
+          await saveAnswer(activityId, Number(idx), ans, false);
+        }
   
       } catch (error) {
-        console.error('Error loading progress:', error);
-        Alert.alert(
-            'May Error',
-            'Hindi ma-load ang iyong progress. Magsisimula mula sa umpisa.'
-        );
+        console.error('Error loading progress from Supabase:', error);
+        // Fallback to local DB
+        const localAnswers = await getAnswers(activityId);
+        const answersMap = localAnswers.reduce((acc, item) => {
+          acc[item.question_index] = item.selected_answer;
+          return acc;
+        }, {} as { [key: number]: string });
+        setSavedAnswers(answersMap);
+        const completedIds = Object.keys(answersMap).map(Number);
+        setAvailableCharacters(allCharacters.filter(c => !completedIds.includes(c.id)));
+        setCompletedCount(completedIds.length);
       } finally {
         setIsLoading(false);
       }
     };
+
   
     const handleClawClick = () => {
       if (availableCharacters.length === 0) {
@@ -470,7 +484,8 @@ import { syncAnswer } from '../../services/sync';
                 {/* Enhanced Character Pool Display */}
                 <View className="absolute bottom-6 left-0 right-0 items-center">
                   <View className="flex-row flex-wrap justify-center px-4">
-                    {availableCharacters.map((char) => (
+                    {availableCharacters.filter(c => !savedAnswers[c.id]).map((char) => (
+
                         <Animated.View
                             key={char.id}
                             style={{
@@ -760,22 +775,41 @@ import { syncAnswer } from '../../services/sync';
     const loadProgress = async () => {
       try {
         setIsLoading(true);
-        const savedAnswers = await getAnswers(activityId);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
+        const parts = activityId.split('-');
+        const activityType = parts[0];
+        const chapterRange = parts.slice(1).join('-') || '';
+        
+        const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+
+        const answersMap = supabaseAnswers.reduce((acc, item) => {
+          acc[Number(item.question_index)] = item.answer;
           return acc;
-        }, {});
+        }, {} as { [key: number]: string });
 
         setSavedAnswers(answersMap);
         setCompletedKeys(Object.keys(answersMap).map(Number));
+
+        // Sync to local
+        for (const [idx, ans] of Object.entries(answersMap)) {
+          await saveAnswer(activityId, Number(idx), ans, false);
+        }
       } catch (error) {
         console.error('Error loading progress:', error);
-        Alert.alert('May Error', 'Hindi ma-load ang iyong progress.');
+        const localAnswers = await getAnswers(activityId);
+        const answersMap = localAnswers.reduce((acc, item) => {
+          acc[item.question_index] = item.selected_answer;
+          return acc;
+        }, {} as { [key: number]: string });
+        setSavedAnswers(answersMap);
+        setCompletedKeys(Object.keys(answersMap).map(Number));
       } finally {
         setIsLoading(false);
       }
     };
+
 
     const handleKeyClick = (questionId: number) => {
       if (completedKeys.includes(questionId)) {
@@ -1299,15 +1333,40 @@ import { syncAnswer } from '../../services/sync';
 
     useEffect(() => {
       const loadAnswers = async () => {
-        const savedAnswers = await getAnswers(activityId);
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
-          return acc;
-        }, {});
-        setAnswers(answersMap);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const parts = activityId.split('-');
+          const activityType = parts[0];
+          const chapterRange = parts.slice(1).join('-') || '';
+          
+          const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+          
+          const answersMap = supabaseAnswers.reduce((acc, item) => {
+            acc[Number(item.question_index)] = item.answer;
+            return acc;
+          }, {} as { [key: number]: string });
+          
+          setAnswers(answersMap);
+
+          // Sync to local
+          for (const [idx, ans] of Object.entries(answersMap)) {
+            await saveAnswer(activityId, Number(idx), ans, false);
+          }
+        } catch (error) {
+          console.error('Error loading Paglilinaw progress:', error);
+          const localAnswers = await getAnswers(activityId);
+          const answersMap = localAnswers.reduce((acc, item) => {
+            acc[item.question_index] = item.selected_answer;
+            return acc;
+          }, {} as { [key: number]: string });
+          setAnswers(answersMap);
+        }
       };
       loadAnswers();
     }, [activityId]);
+
   
     const handleAnswerChange = (id: number, text: string) => {
       setAnswers((prev) => ({ ...prev, [id]: text }));
@@ -1356,18 +1415,24 @@ import { syncAnswer } from '../../services/sync';
             {/* Left: Golden Frame Portrait */}
             <View className="mr-3 shadow-lg">
               {/* Outer Gold Frame */}
-              <View className="h-28 w-24 items-center justify-center rounded-sm border-4 border-[#d4af37] bg-[#bcaaa4] p-1 shadow-md">
+              <View className={`h-28 w-24 items-center justify-center rounded-sm border-4 ${answers[char.id] ? 'border-green-500' : 'border-[#d4af37]'} bg-[#bcaaa4] p-1 shadow-md`}>
                 {/* Inner Detail & Image */}
                 <View className="h-full w-full border border-[#8d6e63] bg-[#5d4037]">
                   <Image
                     source={char.image}
-                    className="h-full w-full"
+                    className={`h-full w-full ${answers[char.id] ? 'opacity-50' : 'opacity-100'}`}
                     resizeMode="cover"
                     defaultSource={{ uri: 'https://via.placeholder.com/100' }}
                   />
+                  {answers[char.id] && (
+                    <View className="absolute inset-0 items-center justify-center bg-black/20">
+                      <FontAwesome5 name="check-circle" size={30} color="#4ade80" />
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
+
   
             {/* Right: Question & Answer Box */}
             <View className="flex-1 rounded-xl border border-gray-400 bg-white p-3 shadow-sm">
@@ -1441,13 +1506,30 @@ import { syncAnswer } from '../../services/sync';
 
     useEffect(() => {
       const loadAnswers = async () => {
-        const savedAnswers = await getAnswers(activityId);
-        if (savedAnswers.length > 0) {
-          setSummary(savedAnswers[0].selected_answer);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const parts = activityId.split('-');
+          const activityType = parts[0];
+          const chapterRange = parts.slice(1).join('-') || '';
+          
+          const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+          if (supabaseAnswers.length > 0) {
+            setSummary(supabaseAnswers[0].answer);
+            await saveAnswer(activityId, 1, supabaseAnswers[0].answer, false);
+          }
+        } catch (error) {
+          console.error('Error loading Pagbubuod progress:', error);
+          const savedAnswers = await getAnswers(activityId);
+          if (savedAnswers.length > 0) {
+            setSummary(savedAnswers[0].selected_answer);
+          }
         }
       };
       loadAnswers();
     }, [activityId]);
+
 
     const handleSave = async () => {
       const user = await getUser();
@@ -1569,20 +1651,49 @@ import { syncAnswer } from '../../services/sync';
 
     useEffect(() => {
       const loadAnswers = async () => {
-        const savedAnswers = await getAnswers(activityId);
-        const answersMap = savedAnswers.reduce(
-          (acc, item) => {
-            const [rowId, field] = item.question_index.toString().split('-');
-            if (!acc[Number(rowId)]) acc[Number(rowId)] = { tauhan: '', pahiwatig: '' };
-            acc[Number(rowId)][field as 'tauhan' | 'pahiwatig'] = item.selected_answer;
-            return acc;
-          },
-          {} as { [key: number]: { tauhan: string; pahiwatig: string } }
-        );
-        setAnswers(answersMap);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const parts = activityId.split('-');
+          const activityType = parts[0];
+          const chapterRange = parts.slice(1).join('-') || '';
+          
+          const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+          
+          const answersMap = supabaseAnswers.reduce(
+            (acc, item) => {
+              const [rowId, field] = item.question_index.toString().split('-');
+              if (!acc[Number(rowId)]) acc[Number(rowId)] = { tauhan: '', pahiwatig: '' };
+              acc[Number(rowId)][field as 'tauhan' | 'pahiwatig'] = item.answer;
+              return acc;
+            },
+            {} as { [key: number]: { tauhan: string; pahiwatig: string } }
+          );
+          setAnswers(answersMap);
+
+          // Sync to local
+          for (const item of supabaseAnswers) {
+            await saveAnswer(activityId, item.question_index as any, item.answer, false);
+          }
+        } catch (error) {
+          console.error('Error loading Paghihinuha 4-6 progress:', error);
+          const localAnswers = await getAnswers(activityId);
+          const answersMap = localAnswers.reduce(
+            (acc, item) => {
+              const [rowId, field] = item.question_index.toString().split('-');
+              if (!acc[Number(rowId)]) acc[Number(rowId)] = { tauhan: '', pahiwatig: '' };
+              acc[Number(rowId)][field as 'tauhan' | 'pahiwatig'] = item.selected_answer;
+              return acc;
+            },
+            {} as { [key: number]: { tauhan: string; pahiwatig: string } }
+          );
+          setAnswers(answersMap);
+        }
       };
       loadAnswers();
     }, [activityId]);
+
 
     const handleAnswerChange = (id: number, field: 'tauhan' | 'pahiwatig', text: string) => {
       setAnswers((prev) => ({
@@ -1658,11 +1769,19 @@ import { syncAnswer } from '../../services/sync';
               key={row.id}
               className={`flex-row ${index < rows.length - 1 ? 'border-b border-[#d7ccc8]' : ''}`}>
               {/* BAGAY - Image(s) */}
-              <View className="flex-1 flex-row items-center justify-center border-r border-[#d7ccc8] py-4">
-                {row.images.map((img, i) => (
-                  <Image key={i} source={img} className="h-16 w-16" resizeMode="contain" />
-                ))}
+              <View className={`flex-1 flex-row items-center justify-center border-r border-[#d7ccc8] py-4 ${answers[row.id]?.tauhan && answers[row.id]?.pahiwatig ? 'bg-green-50' : ''}`}>
+                <View className="relative">
+                  {row.images.map((img, i) => (
+                    <Image key={i} source={img} className={`h-16 w-16 ${answers[row.id]?.tauhan && answers[row.id]?.pahiwatig ? 'opacity-40' : 'opacity-100'}`} resizeMode="contain" />
+                  ))}
+                  {answers[row.id]?.tauhan && answers[row.id]?.pahiwatig && (
+                    <View className="absolute inset-0 items-center justify-center">
+                      <FontAwesome5 name="check" size={24} color="#2e7d32" />
+                    </View>
+                  )}
+                </View>
               </View>
+
 
               {/* TAUHAN - Textbox */}
               <View className="flex-1 items-center justify-center border-r border-[#d7ccc8] px-3 py-4">
@@ -1850,20 +1969,41 @@ import { syncAnswer } from '../../services/sync';
     const loadProgress = async () => {
       try {
         setIsLoading(true);
-        const savedAnswers = await getAnswers(activityId);
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const parts = activityId.split('-');
+        const activityType = parts[0];
+        const chapterRange = parts.slice(1).join('-') || '';
+        
+        const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+
+        const answersMap = supabaseAnswers.reduce((acc, item) => {
+          acc[Number(item.question_index)] = item.answer;
           return acc;
-        }, {});
+        }, {} as { [key: number]: string });
+
         setAnswers(answersMap);
         setRolledNumbers(Object.keys(answersMap).map(Number));
+
+        // Sync to local
+        for (const [idx, ans] of Object.entries(answersMap)) {
+          await saveAnswer(activityId, Number(idx), ans, false);
+        }
       } catch (error) {
-        console.error('Error loading progress:', error);
-        Alert.alert('May Error', 'Hindi ma-load ang iyong progress.');
+        console.error('Error loading Paglilinaw 4-6 progress:', error);
+        const localAnswers = await getAnswers(activityId);
+        const answersMap = localAnswers.reduce((acc, item) => {
+          acc[item.question_index] = item.selected_answer;
+          return acc;
+        }, {} as { [key: number]: string });
+        setAnswers(answersMap);
+        setRolledNumbers(Object.keys(answersMap).map(Number));
       } finally {
         setIsLoading(false);
       }
     };
+
 
     const handleRollDice = () => {
       if (rolledNumbers.length >= 6) {
@@ -2196,15 +2336,38 @@ import { syncAnswer } from '../../services/sync';
 
     useEffect(() => {
       const loadAnswers = async () => {
-        const savedAnswers = await getAnswers(activityId);
-        const answersMap = savedAnswers.reduce((acc, item) => {
-          acc[item.question_index] = item.selected_answer;
-          return acc;
-        }, {});
-        setAnswers(answersMap);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const parts = activityId.split('-');
+          const activityType = parts[0];
+          const chapterRange = parts.slice(1).join('-') || '';
+          
+          const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+          const answersMap = supabaseAnswers.reduce((acc, item) => {
+            acc[item.question_index] = item.answer;
+            return acc;
+          }, {} as { [key: string]: string });
+          setAnswers(answersMap);
+
+          // Sync to local
+          for (const item of supabaseAnswers) {
+            await saveAnswer(activityId, item.question_index as any, item.answer, false);
+          }
+        } catch (error) {
+          console.error('Error loading Pagsisiyasat 4-6 progress:', error);
+          const localAnswers = await getAnswers(activityId);
+          const answersMap = localAnswers.reduce((acc, item) => {
+            acc[item.question_index] = item.selected_answer;
+            return acc;
+          }, {} as { [key: string]: string });
+          setAnswers(answersMap);
+        }
       };
       loadAnswers();
     }, [activityId]);
+
 
     // Auto-save effect
     useEffect(() => {
@@ -2453,13 +2616,30 @@ let questionIndex = 1;
 
     useEffect(() => {
       const loadAnswers = async () => {
-        const savedAnswers = await getAnswers(activityId);
-        if (savedAnswers.length > 0) {
-          setSummary(savedAnswers[0].selected_answer);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const parts = activityId.split('-');
+          const activityType = parts[0];
+          const chapterRange = parts.slice(1).join('-') || '';
+          
+          const supabaseAnswers = await getActivityAnswersFrom4p(user.id, activityType, chapterRange);
+          if (supabaseAnswers.length > 0) {
+            setSummary(supabaseAnswers[0].answer);
+            await saveAnswer(activityId, 1, supabaseAnswers[0].answer, false);
+          }
+        } catch (error) {
+          console.error('Error loading Pagbubuod 4-6 progress:', error);
+          const localAnswers = await getAnswers(activityId);
+          if (localAnswers.length > 0) {
+            setSummary(localAnswers[0].selected_answer);
+          }
         }
       };
       loadAnswers();
     }, [activityId]);
+
 
     const handleSave = async () => {
       const user = await getUser();

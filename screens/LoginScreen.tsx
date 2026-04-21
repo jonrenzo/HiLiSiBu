@@ -42,12 +42,17 @@ export default function LoginScreen() {
 
       if (error) throw error;
 
+      // Get user metadata to check role
+      const { data: { user } } = await supabase.auth.getUser();
+      const role = user?.user_metadata?.role || 'student';
+
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: 'MainTabs' }],
+          routes: [{ name: role === 'teacher' ? 'TeacherDashboard' : 'MainTabs' as any }],
         })
       );
+
     } catch (error: any) {
       console.error('Login Error:', error);
       let errorMessage = 'Hindi nakapag-login. Pakisubukan muli.';

@@ -12,14 +12,18 @@ import RegistrationScreen from '../screens/RegistrationScreen';
 import AboutScreen from '../screens/AboutScreen';
 import TabNavigator from './TabNavigator';
 import ChapterDetailScreen from '../screens/ChapterDetailScreen';
-// import ActivitiesMenuScreen from '../screens/ActivitiesMenuScreen'; // <-- Remove this, it's in TabNavigator
-import ActivityContainerScreen from '../screens/activities/ActivityContainerScreen'; // <-- Import the correct screen
+import ActivityContainerScreen from '../screens/activities/ActivityContainerScreen';
+import TeacherDashboardScreen from '../screens/TeacherDashboardScreen';
+import TeacherClassDetailScreen from '../screens/TeacherClassDetailScreen';
+
 
 export type RootStackParamList = {
   Login: undefined;
   Registration: undefined;
   About: undefined;
   MainTabs: undefined;
+  TeacherDashboard: undefined;
+  TeacherClassDetail: { classId: string; className: string };
   ActivityContainer: { rangeId: string; title: string };
   ChapterDetail: {
     id: number;
@@ -28,6 +32,7 @@ export type RootStackParamList = {
     image: any;
   };
 };
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -46,7 +51,15 @@ export default function AppNavigator() {
         setSession(supabaseSession);
 
         if (supabaseSession) {
-          setInitialRoute('MainTabs');
+          // Fetch role from profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', supabaseSession.user.id)
+            .single();
+
+          const role = profile?.role || 'student';
+          setInitialRoute(role === 'teacher' ? 'TeacherDashboard' : 'MainTabs');
         } else {
           setInitialRoute('Login');
         }
@@ -60,12 +73,23 @@ export default function AppNavigator() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) {
-        setInitialRoute('MainTabs');
+        // Fetch role if session just started
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        const role = profile?.role || 'student';
+        setInitialRoute(role === 'teacher' ? 'TeacherDashboard' : 'MainTabs');
+      } else {
+        setInitialRoute('Login');
       }
     });
+
 
     return () => subscription.unsubscribe();
   }, []);
@@ -96,11 +120,14 @@ export default function AppNavigator() {
         <Stack.Screen name="Registration" component={RegistrationScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
+        <Stack.Screen name="TeacherDashboard" component={TeacherDashboardScreen} />
+        <Stack.Screen name="TeacherClassDetail" component={TeacherClassDetailScreen} />
         <Stack.Screen
           name="ChapterDetail"
           component={ChapterDetailScreen}
           options={{ animation: 'slide_from_right' }}
         />
+
 
         {/* CORRECTED THIS PART */}
         <Stack.Screen

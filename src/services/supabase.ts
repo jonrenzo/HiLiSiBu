@@ -126,7 +126,9 @@ export const saveActivityAnswer = async (
 ): Promise<void> => {
   const parts = activityId.split('-');
   const activityType = parts[0];
-  const chapterRange = parts[1] || '';
+  // Correctly extract range (e.g. "01-03") by joining parts after the first "-"
+  const chapterRange = parts.slice(1).join('-') || '';
+
 
   const { error } = await supabase.from('4p_answers').upsert({
     user_id: userId,

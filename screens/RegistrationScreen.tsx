@@ -25,8 +25,7 @@ type RegistrationData = {
   email: string;
   password: string;
   confirmPassword: string;
-  grade: string;
-  section: string;
+  classCode: string;
   role: 'student' | 'teacher';
 };
 
@@ -43,8 +42,7 @@ export default function RegistrationScreen() {
     email: '',
     password: '',
     confirmPassword: '',
-    grade: '',
-    section: '',
+    classCode: '',
     role: 'student',
   });
 
@@ -69,8 +67,8 @@ export default function RegistrationScreen() {
       return;
     }
 
-    if (!formData.grade.trim() || !formData.section.trim()) {
-      Alert.alert('Kulang na Impormasyon', 'Paki-enter ang baitang at seksyon.');
+    if (formData.role === 'student' && !formData.classCode.trim()) {
+      Alert.alert('Kulang na Impormasyon', 'Kinakailangan ang class code upang makapag-register.');
       return;
     }
 
@@ -90,24 +88,71 @@ export default function RegistrationScreen() {
     }
 
     setLoading(true);
+    const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://4pmodel.vercel.app';
+
     try {
-      const { data, error } = await supabase.auth.signUp({
+      let classId = null;
+      let className = '';
+
+      // 1. Validate class code if student
+      if (formData.role === 'student') {
+        const validateUrl = `${backendUrl}/api/validate-class?code=${encodeURIComponent(formData.classCode.trim())}`;
+        console.log('Validating class at:', validateUrl);
+        const classRes = await fetch(validateUrl);
+
+
+        if (!classRes.ok) {
+          Alert.alert('Error', 'Hindi mahanap ang klase. Suriin ang iyong class code.');
+          setLoading(false);
+          return;
+        }
+
+        const classData = await classRes.json();
+        classId = classData.id;
+        className = classData.name;
+      }
+
+      // 2. Supabase Sign Up
+      const { data, error: signupError } = await supabase.auth.signUp({
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         options: {
           data: {
             name: formData.name.trim(),
-            grade: formData.grade.trim(),
-            section: formData.section.trim(),
             role: formData.role,
+            class_id: classId,
           },
         },
       });
 
-      if (error) throw error;
+      if (signupError) throw signupError;
 
       if (data.user) {
-        Alert.alert('Tagumpay', 'Matagumpay na nakarehistro!');
+        // 3. Create profile via server API to bypass RLS
+        const registerProfileUrl = `${backendUrl}/api/auth/register-profile`;
+        console.log('Registering profile at:', registerProfileUrl);
+        const profileRes = await fetch(registerProfileUrl, {
+
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: data.user.id,
+            name: formData.name.trim(),
+            classId: classId,
+            role: formData.role,
+          }),
+        });
+
+        if (!profileRes.ok) {
+          console.error('Failed to create profile via backend');
+        }
+
+        const successMsg =
+          formData.role === 'student'
+            ? `Matagumpay na nakarehistro! Ikaw ay naka-enroll sa klase: ${className}`
+            : 'Matagumpay na nakarehistro bilang Guro!';
+
+        Alert.alert('Tagumpay', successMsg);
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -121,8 +166,6 @@ export default function RegistrationScreen() {
 
       if (error.message.includes('already registered')) {
         errorMessage = 'Ang email na ito ay naka-register na.';
-      } else if (error.message.includes('@')) {
-        errorMessage = ' Hindi有效 na email.';
       }
 
       Alert.alert('Error', errorMessage);
@@ -253,23 +296,16 @@ export default function RegistrationScreen() {
               </TouchableOpacity>
             </View>
 
-            <View className="flex-row space-x-2">
+            {formData.role === 'student' && (
               <TextInput
-                placeholder="Baitang"
+                placeholder="Class Code (Hal. ABC123)"
                 placeholderTextColor="#3e2c2c"
-                className="mb-2 flex-1 rounded-full border-2 border-ink bg-parchment px-6 py-3 text-center font-poppins-bold text-lg text-ink shadow-sm"
-                value={formData.grade}
-                onChangeText={(text) => setFormData({ ...formData, grade: text })}
+                autoCapitalize="characters"
+                className="mb-2 w-full rounded-full border-2 border-ink bg-parchment px-6 py-3 text-center font-poppins-bold text-lg text-ink shadow-sm"
+                value={formData.classCode}
+                onChangeText={(text) => setFormData({ ...formData, classCode: text.toUpperCase() })}
               />
-
-              <TextInput
-                placeholder="Seksyon"
-                placeholderTextColor="#3e2c2c"
-                className="mb-2 flex-1 rounded-full border-2 border-ink bg-parchment px-6 py-3 text-center font-poppins-bold text-lg text-ink shadow-sm"
-                value={formData.section}
-                onChangeText={(text) => setFormData({ ...formData, section: text })}
-              />
-            </View>
+            )}
 
             {/* Role Selection */}
             <View className="mb-4 flex-row justify-center space-x-4">
@@ -339,42 +375,46 @@ export default function RegistrationScreen() {
                 Mga Tuntunin at Kondisyon
               </Text>
             </View>
-
             <ScrollView className="flex-1 p-5">
               <Text className="mb-1 font-poppins-bold text-sm text-ink">I. Layunin</Text>
               <Text className="mb-3 text-justify font-poppins text-xs text-ink">
-                Ang aplikasyon ay isinagawa upang tulungan ang mga mag-aaral sa kanilang pagbabasa
-                na may pang-unawa. Ito ay nakatuon sa mga kasanayang paghinuha, paglilinaw,
-                pagsisiyasat, at pagbubuod.
+                Ang aplikasyon ay isinagawa upang tulungan ang mga mag-aaral sa kanilang pagbabasa na may pang-unawa. Ito ay nakatuon sa mga kasanayang paghihinuha, paglilinaw, pagsisiyasat, at pagbubuod upang mapaunlad ang kanilang pang-unawa at kritikal na pag-iisip.
               </Text>
-
-              <Text className="mb-1 font-poppins-bold text-sm text-ink">II. Pagkapribado</Text>
+              <Text className="mb-1 font-poppins-bold text-sm text-ink">II. Saklaw ng Paggamit</Text>
               <Text className="mb-3 text-justify font-poppins text-xs text-ink">
-                Ang lahat ng datos ay mananatiling pribado at kumpidensyal.
+                Ang aplikasyon ay gagamitin lamang para sa mga gawaing pang-akademiko at hindi para sa personal, komersyal, o libangan. Ang mga mag-aaral ay inaasahang gagamit ng aplikasyon sa tamang paraan at ayon sa itinakdang layunin ng pananaliksik.
               </Text>
-
+              <Text className="mb-1 font-poppins-bold text-sm text-ink">III. Pagkapribado at Kumpidensyalidad</Text>
+              <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                Ang lahat ng datos na ilalagay ng mag-aaral sa aplikasyon ay mananatiling pribado at kumpidensyal. Hindi isasapubliko ang mga sagot o impormasyon maliban kung bahagi ng pagsusuri sa pananaliksik. Walang personal na pagkakakilanlan ang ilalantad sa anumang ulat o presentasyon. Sa paggamit ng aplikasyon, ang mag-aaral ay nagbibigay ng pahintulot na gamitin ang kanyang mga sagot para sa layunin ng pananaliksik. May karapatan ang mag-aaral na tumigil o huwag ipagpatuloy ang paggamit ng aplikasyon anumang oras.
+              </Text>
+              <Text className="mb-1 font-poppins-bold text-sm text-ink">IV. Pananagutan ng Gumagamit</Text>
+              <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                Ang mag-aaral ay inaasahang magbibigay ng tapat, malinaw, at makabuluhang sagot. Ang mag-aaral ay may pananagutan na huwag maglagay ng maling impormasyon, panlilibak, o anumang hindi angkop na sagot. Ang mananaliksik ay may tungkuling pangalagaan ang datos at tiyakin ang tamang paggamit nito. Ang mananaliksik ay magbibigay ng malinaw na gabayan at paliwanag sa mga mag-aaral hinggil sa aplikasyon. Ang mananaliksik ay hindi gagamit ng datos para sa layuning labas sa pananaliksik.
+              </Text>
+              <Text className="mb-1 font-poppins-bold text-sm text-ink">V. Pagbabago ng Tuntunin</Text>
+              <Text className="mb-3 text-justify font-poppins text-xs text-ink">
+                Maaaring baguhin o i-update ng mananaliksik ang mga tuntunin at kundisyon kung kinakailangan. Ang anumang pagbabago ay ipaaalam sa mga mag-aaral bago ipatupad.
+              </Text>
+              <Text className="mb-4 text-justify font-poppins text-[10px] italic text-ink opacity-80">
+                Ang aplikasyon na ito ay nangongolekta ng datos ng iyong paggamit (mga sagot, progreso, atbp.) na nakaugnay sa iyong pagkakakilanlan para sa layunin ng pananaliksik. Ang iyong mga datos ay mananatiling kumpidensyal at gagamitin lamang sa pag-aaral. Ang paglahok ay boluntaryo.
+              </Text>
               <View className="my-4 h-[1px] bg-ink/20" />
-
               <Text className="mb-4 font-poppins-bold text-xs text-ink">
-                Lagyan ng tsek ( ✓ ) ang kahon:
+                Lagyan ng tsek ( ✓ ) ang kahon na naaayon sa iyong desisyon/pahintulot bago magpatuloy:
               </Text>
-
               <CustomCheckbox
-                label="Ako ay pumapayag sa mga tuntunin at kondisyon"
+                label="Ako ay pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
                 isSelected={agreed === true}
                 onSelect={() => setAgreed(true)}
               />
-
               <CustomCheckbox
-                label="Hindi ako pumapayag"
+                label="Hindi ako pumapayag na kolektahin at gamitin ang aking mga datos para sa akademikong pananaliksik"
                 isSelected={agreed === false}
                 onSelect={() => setAgreed(false)}
               />
-
               <View className="h-10" />
-            </ScrollView>
-
-            <TouchableOpacity
+            </ScrollView><TouchableOpacity
               className="items-center justify-center bg-ink p-4"
               onPress={() => setModalVisible(false)}>
               <Text className="font-poppins-bold uppercase tracking-widest text-white">Isara</Text>

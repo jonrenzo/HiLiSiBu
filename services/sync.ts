@@ -41,7 +41,7 @@ export const syncAnswer = async (
   try {
     const parts = activityId.split('-');
     const activityType = parts[0];
-    const chapterRange = parts[1] || '';
+    const chapterRange = parts.slice(1).join('-') || '';
 
     const { error } = await supabase.from('4p_answers').upsert({
       user_id: userId,
@@ -83,7 +83,7 @@ export const syncAllAnswers = async (): Promise<boolean> => {
     for (const ans of savedAnswers) {
       const parts = ans.activity_id.split('-');
       const activityType = parts[0];
-      const chapterRange = parts[1] || '';
+      const chapterRange = parts.slice(1).join('-') || '';
 
       await supabase.from('4p_answers').upsert({
         user_id: userId,
