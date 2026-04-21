@@ -124,15 +124,35 @@ export const saveActivityAnswer = async (
   answer: string,
   isCorrect: boolean
 ): Promise<void> => {
-  const { error } = await supabase.from('activity_answers').insert({
+  const parts = activityId.split('-');
+  const activityType = parts[0];
+  const chapterRange = parts[1] || '';
+
+  const { error } = await supabase.from('4p_answers').upsert({
     user_id: userId,
-    activity_id: activityId,
-    question_index: questionIndex,
+    activity_type: activityType,
+    chapter_range: chapterRange,
+    question_index: questionIndex.toString(),
     answer: answer,
-    is_correct: isCorrect,
-  });
+  }, { onConflict: 'user_id,activity_type,chapter_range,question_index' });
 
   if (error) throw error;
+};
+
+export const getActivityAnswersFrom4p = async (
+  userId: string,
+  activityType: string,
+  chapterRange: string
+): Promise<{ question_index: string; answer: string }[]> => {
+  const { data, error } = await supabase
+    .from('4p_answers')
+    .select('question_index, answer')
+    .eq('user_id', userId)
+    .eq('activity_type', activityType)
+    .eq('chapter_range', chapterRange);
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getActivityAnswers = async (

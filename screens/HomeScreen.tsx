@@ -63,19 +63,25 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      const userId = user?.id;
+
+      if (!userId) {
+        setReadChapters([]);
+        return;
+      }
+
       const fetchProgress = async () => {
-        if (user) {
-          try {
-            const progress: ChapterProgress[] = await getChapterProgress(user.id);
-            const readIds = progress.filter((p) => p.is_read).map((p) => p.chapter_id);
-            setReadChapters(readIds);
-          } catch (error) {
-            console.error('Error fetching chapter progress:', error);
-          }
+        try {
+          const progress: ChapterProgress[] = await getChapterProgress(userId);
+          const readIds = progress.filter((p) => p.is_read).map((p) => p.chapter_id);
+          setReadChapters(readIds);
+        } catch (error) {
+          console.error('Error fetching chapter progress:', error);
         }
       };
+
       fetchProgress();
-    }, [user])
+    }, [user?.id])
   );
 
   const handleRead = (chapter: (typeof chapters)[0]) => {
@@ -95,21 +101,18 @@ export default function HomeScreen() {
       {/* Safe Area for Status Bar */}
       <SafeAreaView className="bg-[#4a342e]" />
 
+      {/* User greeting */}
+      <View className="mt-3 items-center">
+        <Text className="font-poppins text-base text-[#e8d4b0]">
+          Kumusta, <Text className="font-poppins-bold">{studentName}</Text>
+        </Text>
+      </View>
+
       {/* Main Header Title */}
       <View className={`px-4 pb-4 ${Platform.OS === 'android' ? 'pt-8' : 'pt-2'}`}>
         <View className="rounded-lg border border-[#6d4c41] bg-[#5d4037] px-6 py-3 shadow-lg">
           <Text className="text-center font-poppins-bold text-2xl tracking-wide text-[#f5f5f5]">
             Mga Piling Kabanata
-          </Text>
-        </View>
-
-        {/* User greeting */}
-        <View className="mt-3 items-center">
-          <Text className="font-poppins text-sm text-[#e8d4b0]">
-            Hi, <Text className="font-poppins-bold">{studentName}</Text>
-          </Text>
-          <Text className="font-poppins text-xs text-[#bcaaa4]">
-            {completedCount}/6 na kabanata ang nabasa
           </Text>
         </View>
       </View>

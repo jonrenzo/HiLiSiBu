@@ -18,28 +18,55 @@ import { FontAwesome5, Feather } from '@expo/vector-icons';
 import Svg, { Line } from 'react-native-svg';
 import { chaptersData } from '../data/chaptersData';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { markChapterAsRead, saveTalasalitaanAnswers, getTalasalitaanAnswers } from '../services/db';
+import {
+  markChapterAsRead as markChapterLocally,
+  saveTalasalitaanAnswers,
+  getTalasalitaanAnswers,
+} from '../services/db';
+import { supabase } from '../src/lib/supabase';
+import { useAuth } from '../src/hooks/useAuth';
+import { syncTalasalitaanAnswers, syncChapterRead } from '../services/sync';
 
 type ChapterDetailRouteProp = RouteProp<RootStackParamList, 'ChapterDetail'>;
 
 export default function ChapterDetailScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<ChapterDetailRouteProp>();
+  const { user } = useAuth();
+  const videoRef = useRef(null);
 
   const { id, title, tag, image } = route.params;
   const chapterContent = chaptersData.find((c) => c.id === id);
 
   const [activeTab, setActiveTab] = useState<'talasalitaan' | 'nobela'>('talasalitaan');
 
-
   // --- STATE MANAGEMENT ---
 
   React.useEffect(() => {
     if (activeTab === 'nobela') {
       console.log(`Marking Chapter ${id} as read...`);
-      markChapterAsRead(id);
+      markChapterLocally(id);
+
+      // Also save to Supabase
+      if (user?.id) {
+        supabase
+          .from('chapter_progress')
+          .upsert(
+            {
+              user_id: user.id,
+              chapter_id: id,
+              is_read: true,
+              read_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,chapter_id' }
+          )
+          .then(({ error }) => {
+            if (error) console.error('Supabase progress error:', error);
+            else console.log('Progress saved to Supabase');
+          });
+      }
     }
-  }, [activeTab, id]);
+  }, [activeTab, id, user]);
 
   // 1. Multiple Choice
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
@@ -94,7 +121,8 @@ export default function ChapterDetailScreen() {
 
                   if (question && savedWord && question.clues) {
                     question.clues.forEach((char, idx) => {
-                      if (char === '') { // This is a blank for user input
+                      if (char === '') {
+                        // This is a blank for user input
                         const key = `q${qId}-${idx}`;
                         newPunanInputs[key] = savedWord[idx] || '';
                       }
@@ -116,7 +144,7 @@ export default function ChapterDetailScreen() {
       loadAnswers();
     }, [id, chapterContent])
   );
-  
+
   // --- HANDLERS ---
 
   const handleSave = async () => {
@@ -145,12 +173,13 @@ export default function ChapterDetailScreen() {
     }
     if (quizType) {
       await saveTalasalitaanAnswers(id, quizType, answersToSave);
+      syncTalasalitaanAnswers(id, quizType, answersToSave);
       Alert.alert('Sagot Nai-save!', 'Ang iyong mga sagot ay nai-save na.');
     }
   };
-  
+
   // -- Punan Mo Handlers (Updated)--
-  
+
   // Updated: Handle text change and update complete word
   const handlePunanTextChange = (
     text: string,
@@ -160,7 +189,7 @@ export default function ChapterDetailScreen() {
   ) => {
     const key = `q${questionId}-${charIndex}`;
     const upperText = text.toUpperCase();
-    
+
     // Update individual input for UI
     const newPunanInputs = { ...punanInputs, [key]: upperText };
     setPunanInputs(newPunanInputs);
@@ -175,9 +204,9 @@ export default function ChapterDetailScreen() {
         completeWord += newPunanInputs[inputKey] || '_';
       }
     });
-    
+
     // Update complete answer state
-    setPunanAnswers(prev => ({ ...prev, [questionId]: completeWord }));
+    setPunanAnswers((prev) => ({ ...prev, [questionId]: completeWord }));
 
     // Auto-focus next input
     if (text.length > 0) {
@@ -194,14 +223,9 @@ export default function ChapterDetailScreen() {
   };
 
   // Handle backspace
-  const handlePunanKeyPress = (
-    e: any,
-    questionId: number,
-    charIndex: number,
-    clues: string[]
-  ) => {
+  const handlePunanKeyPress = (e: any, questionId: number, charIndex: number, clues: string[]) => {
     const key = `q${questionId}-${charIndex}`;
-    
+
     if (e.nativeEvent.key === 'Backspace') {
       const currentVal = punanInputs[key];
 
@@ -219,7 +243,7 @@ export default function ChapterDetailScreen() {
           completeWord += newPunanInputs[inputKey] || '_';
         }
       });
-      setPunanAnswers(prev => ({ ...prev, [questionId]: completeWord }));
+      setPunanAnswers((prev) => ({ ...prev, [questionId]: completeWord }));
 
       // If the input was already empty, then move focus to the previous input
       if (!currentVal) {
@@ -236,7 +260,6 @@ export default function ChapterDetailScreen() {
     }
   };
 
-
   // Multiple Choice
   const handleSelectAnswer = (questionId: number, answer: string, correctAnswer: string) => {
     setSelectedAnswers((prev) => ({ ...prev, [questionId]: answer }));
@@ -248,7 +271,6 @@ export default function ChapterDetailScreen() {
     newInputs[index] = text;
     setMindMapInputs(newInputs);
   };
-
 
   // Matching Type 1
   const handleChoiceClick = (choice: string) => {
@@ -365,7 +387,8 @@ export default function ChapterDetailScreen() {
                       </Text>
                       <Text className="mb-6 text-justify font-poppins text-xs leading-5 text-ink opacity-80">
                         <Text className="font-bold">Panuto: </Text>
-                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang pinakaangkop na kasingkahulugan.
+                        Basahin nang mabuti ang bawat pangungusap. Piliin at pindutin ang
+                        pinakaangkop na kasingkahulugan.
                       </Text>
                       {chapterContent.quiz.map((item, index) => (
                         <View key={item.id} className="mb-8">
@@ -492,34 +515,34 @@ export default function ChapterDetailScreen() {
                                   const isPreFilled = char !== '';
                                   const inputKey = `q${item.id}-${charIdx}`;
                                   return (
-                                      <View
-                                          key={charIdx}
-                                          // Updated: Removed box border/bg, added bottom border, reduced width
-                                          className="h-6 w-4 items-center justify-center border-b border-ink">
-                                        {isPreFilled ? (
-                                            <Text className="font-poppins-bold text-xs text-ink">
-                                              {char}
-                                            </Text>
-                                        ) : (
-                                            <TextInput
-                                                ref={(el) => (punanInputRefs.current[inputKey] = el)}
-                                                className="h-full w-full p-0 text-center font-poppins-bold text-xs text-ink"
-                                                maxLength={1}
-                                                value={punanInputs[inputKey] || ''}
-                                                onChangeText={(text) =>
-                                                    handlePunanTextChange(
-                                                        text,
-                                                        item.id,
-                                                        charIdx,
-                                                        item.clues!
-                                                    )
-                                                }
-                                                onKeyPress={(e) =>
-                                                    handlePunanKeyPress(e, item.id, charIdx, item.clues!)
-                                                }
-                                            />
-                                        )}
-                                      </View>
+                                    <View
+                                      key={charIdx}
+                                      // Updated: Removed box border/bg, added bottom border, reduced width
+                                      className="h-6 w-4 items-center justify-center border-b border-ink">
+                                      {isPreFilled ? (
+                                        <Text className="font-poppins-bold text-xs text-ink">
+                                          {char}
+                                        </Text>
+                                      ) : (
+                                        <TextInput
+                                          ref={(el) => (punanInputRefs.current[inputKey] = el)}
+                                          className="h-full w-full p-0 text-center font-poppins-bold text-xs text-ink"
+                                          maxLength={1}
+                                          value={punanInputs[inputKey] || ''}
+                                          onChangeText={(text) =>
+                                            handlePunanTextChange(
+                                              text,
+                                              item.id,
+                                              charIdx,
+                                              item.clues!
+                                            )
+                                          }
+                                          onKeyPress={(e) =>
+                                            handlePunanKeyPress(e, item.id, charIdx, item.clues!)
+                                          }
+                                        />
+                                      )}
+                                    </View>
                                   );
                                 })}
                               </View>

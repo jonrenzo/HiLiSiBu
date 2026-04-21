@@ -1,7 +1,10 @@
-  import React, { useState, useEffect, useRef } from 'react';
-  import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal, Easing, ScrollView } from 'react-native';
-  import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-  import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, Image, TouchableOpacity, Alert, Animated, Modal, Easing, ScrollView } from 'react-native';
+import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getUser, saveAnswer, saveScore, getAnswers } from '../../services/db';
+import { supabase } from '../../src/lib/supabase';
+import { saveActivityAnswer } from '../../src/services/supabase';
+import { syncAnswer } from '../../services/sync';
   
   // ==================================================
   // 1. PAGHIHINUHA (Inference) - Character Analysis (Kabanata 1-3)
@@ -56,13 +59,38 @@
   
     // State management
     const [availableCharacters, setAvailableCharacters] = useState(allCharacters);
-    const [clawedCharacter, setClawedCharacter] = useState(null);
+    const [clawedCharacter, setClawedCharacter] = useState<any>(null);
     const [currentAnswer, setCurrentAnswer] = useState('');
     const [showQuestionModal, setShowQuestionModal] = useState(false);
     const [isClawing, setIsClawing] = useState(false);
     const [completedCount, setCompletedCount] = useState(0);
     const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: string }>({});
     const [isLoading, setIsLoading] = useState(true);
+    const [autoSaving, setAutoSaving] = useState(false);
+    const [autoSaved, setAutoSaved] = useState(false);
+
+    // Auto-save effect
+    useEffect(() => {
+      if (!currentAnswer.trim() || !clawedCharacter) return;
+      
+      const timer = setTimeout(async () => {
+        setAutoSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && clawedCharacter) {
+            await saveActivityAnswer(user.id, activityId, clawedCharacter.id, currentAnswer, false);
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        } finally {
+          setAutoSaving(false);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [currentAnswer, clawedCharacter]);
   
     // Animation values
     const clawY = useRef(new Animated.Value(0)).current;
@@ -244,6 +272,9 @@
   
         // Save answer to database (using clawedCharacter.id as question_index)
         await saveAnswer(activityId, clawedCharacter.id, currentAnswer, false);
+        
+        // Sync to Supabase
+        syncAnswer(activityId, clawedCharacter.id, currentAnswer);
   
         // Update local state
         setSavedAnswers((prev) => ({
@@ -619,7 +650,7 @@
                               }}>
                             <FontAwesome5 name="save" size={18} color="#d4af37" />
                             <Text className="ml-2 font-poppins-bold text-base text-white">
-                              I-save
+                              {autoSaving ? 'Saving...' : autoSaved ? 'Saved!' : 'I-save'}
                             </Text>
                           </TouchableOpacity>
                         </View>
@@ -679,6 +710,31 @@
     const [savedAnswers, setSavedAnswers] = useState<{ [key: number]: string }>({});
     const [completedKeys, setCompletedKeys] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [autoSaving, setAutoSaving] = useState(false);
+    const [autoSaved, setAutoSaved] = useState(false);
+
+    // Auto-save effect
+    useEffect(() => {
+      if (!currentAnswer.trim() || !selectedKey) return;
+      
+      const timer = setTimeout(async () => {
+        setAutoSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && selectedKey) {
+            await saveActivityAnswer(user.id, activityId, selectedKey, currentAnswer, false);
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        } finally {
+          setAutoSaving(false);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [currentAnswer, selectedKey]);
 
     // Animation values
     const keyRotation = useRef(new Animated.Value(0)).current;
@@ -772,6 +828,9 @@
       }
 
       await saveAnswer(activityId, selectedKey, currentAnswer, false);
+
+      // Sync to Supabase
+      syncAnswer(activityId, selectedKey!, currentAnswer);
 
       setSavedAnswers((prev) => ({
         ...prev,
@@ -1160,7 +1219,7 @@
                         paddingVertical: 12,
                       }}>
                       <Text style={{ fontWeight: 'bold', fontSize: 12, color: 'white' }}>
-                        I-Submit
+                        {autoSaving ? 'Saving...' : autoSaved ? 'Saved!' : 'I-Submit'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1209,7 +1268,35 @@
   
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const activityId = `paglilinaw-${rangeId}`;
-  
+    const [autoSaving, setAutoSaving] = useState(false);
+    const [autoSaved, setAutoSaved] = useState(false);
+
+    // Auto-save effect for each answer field
+    useEffect(() => {
+      const timer = setTimeout(async () => {
+        const nonEmptyAnswers = Object.entries(answers).filter(([_, v]) => v.trim());
+        if (nonEmptyAnswers.length === 0) return;
+        
+        setAutoSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            for (const [questionIndex, answer] of nonEmptyAnswers) {
+              await saveActivityAnswer(user.id, activityId, parseInt(questionIndex), answer, false);
+            }
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        } finally {
+          setAutoSaving(false);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [answers]);
+
     useEffect(() => {
       const loadAnswers = async () => {
         const savedAnswers = await getAnswers(activityId);
@@ -1239,6 +1326,7 @@
         const answer = answers[char.id];
         if (answer) {
           await saveAnswer(activityId, char.id, answer, false);
+          syncAnswer(activityId, char.id, answer);
           score++;
         }
       }
@@ -1303,18 +1391,20 @@
                 />
               </View>
             </View>
-          </View>
+</View>
         ))}
         <TouchableOpacity
           onPress={handleSave}
           className="mt-4 flex-row items-center justify-center rounded-full bg-[#3e2723] py-3">
           <FontAwesome5 name="save" size={16} color="white" />
-          <Text className="ml-2 font-poppins-bold text-white">I-save ang mga Sagot</Text>
+          <Text className="ml-2 font-poppins-bold text-white">
+            {autoSaving ? 'Saving...' : autoSaved ? 'Nai-save na!' : 'I-save ang mga Sagot'}
+          </Text>
         </TouchableOpacity>
       </View>
     );
   };
-  
+
   // ==================================================
   // 4. PAGBUBUOD (Summary) - PLACEHOLDER
   // ==================================================
@@ -1369,6 +1459,7 @@
       const score = summary.trim().length > 0 ? 1 : 0;
 
       await saveAnswer(activityId, 1, summary, false);
+      syncAnswer(activityId, 1, summary);
       await saveScore(user.id, activityId, score);
 
       Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
@@ -1516,10 +1607,12 @@
         const answer = answers[row.id];
         if (answer?.tauhan) {
           await saveAnswer(activityId, `${row.id}-tauhan`, answer.tauhan, false);
+          syncAnswer(activityId, `${row.id}-tauhan`, answer.tauhan);
           score++;
         }
         if (answer?.pahiwatig) {
           await saveAnswer(activityId, `${row.id}-pahiwatig`, answer.pahiwatig, false);
+          syncAnswer(activityId, `${row.id}-pahiwatig`, answer.pahiwatig);
           score++;
         }
       }
@@ -1716,6 +1809,34 @@
     const [currentAnswer, setCurrentAnswer] = useState('');
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const [isLoading, setIsLoading] = useState(true);
+    const [autoSaving, setAutoSaving] = useState(false);
+    const [autoSaved, setAutoSaved] = useState(false);
+
+    // Auto-save effect
+    useEffect(() => {
+      const timer = setTimeout(async () => {
+        const nonEmptyAnswers = Object.entries(answers).filter(([_, v]) => v.trim());
+        if (nonEmptyAnswers.length === 0) return;
+        
+        setAutoSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            for (const [questionIndex, answer] of nonEmptyAnswers) {
+              await saveActivityAnswer(user.id, activityId, parseInt(questionIndex), answer, false);
+            }
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        } finally {
+          setAutoSaving(false);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [answers]);
 
     // Animation values
     const diceRotate = useRef(new Animated.Value(0)).current;
@@ -1818,6 +1939,7 @@
       }
 
       await saveAnswer(activityId, selectedQuestion!, currentAnswer, false);
+      syncAnswer(activityId, selectedQuestion!, currentAnswer);
 
       setAnswers((prev) => ({
         ...prev,
@@ -2069,7 +2191,9 @@
   export const Pagsisiyasat4to6 = ({ rangeId }: { rangeId: string }) => {
     const [answers, setAnswers] = useState<{ [key: string]: string }>({});
     const activityId = `pagsisiyasat-${rangeId}`;
-  
+    const [autoSaving, setAutoSaving] = useState(false);
+    const [autoSaved, setAutoSaved] = useState(false);
+
     useEffect(() => {
       const loadAnswers = async () => {
         const savedAnswers = await getAnswers(activityId);
@@ -2081,6 +2205,32 @@
       };
       loadAnswers();
     }, [activityId]);
+
+    // Auto-save effect
+    useEffect(() => {
+      const timer = setTimeout(async () => {
+        const nonEmptyAnswers = Object.entries(answers).filter(([_, v]) => v.trim());
+        if (nonEmptyAnswers.length === 0) return;
+        
+        setAutoSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            for (const [questionIndex, answer] of nonEmptyAnswers) {
+              await saveActivityAnswer(user.id, activityId, parseInt(questionIndex), answer, false);
+            }
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        } finally {
+          setAutoSaving(false);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [answers]);
   
     const handleAnswerChange = (key: string, text: string) => {
       setAnswers((prev) => ({ ...prev, [key]: text }));
@@ -2094,15 +2244,17 @@
       }
   
       let score = 0;
-      let questionIndex = 1;
-  
+let questionIndex = 1;
+
       for (const key in answers) {
         if (answers[key]) {
-          await saveAnswer(activityId, questionIndex++, answers[key], false);
+          await saveAnswer(activityId, questionIndex, answers[key], false);
+          syncAnswer(activityId, questionIndex, answers[key]);
+          questionIndex++;
           score++;
         }
       }
-  
+
       await saveScore(user.id, activityId, score);
       Alert.alert('Mahusay!', 'Ang iyong mga sagot ay nai-save na.');
     };
@@ -2319,6 +2471,7 @@
       const score = summary.trim().length > 0 ? 1 : 0;
 
       await saveAnswer(activityId, 1, summary, false);
+      syncAnswer(activityId, 1, summary);
       await saveScore(user.id, activityId, score);
 
       Alert.alert('Mahusay!', 'Ang iyong buod ay nai-save na.');
